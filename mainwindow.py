@@ -1,6 +1,7 @@
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QHBoxLayout, QVBoxLayout
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QHBoxLayout, QVBoxLayout, QWidget, QPushButton
 from PySide6.QtCore import Qt, QTimer
 from PySide6 import QtCharts
+from controlwindow import ControlWindow
 
 class MainWindow(QMainWindow):
     def __init__(self, app, connection):
@@ -53,7 +54,7 @@ class MainWindow(QMainWindow):
                 delayTimer = QTimer(self)
                 delayTimer.setSingleShot(True)
                 delayTimer.timeout.connect(self.connectControlWindow)
-                delayTimer.start(5000)
+                delayTimer.start(2000)
 
             case 1:
                 self.label.setText("<font color=red size=40>Failed to connect to Arduino" +
@@ -78,27 +79,3 @@ class MainWindow(QMainWindow):
         self.close()
         self.controlWindow.show()
 
-class ControlWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-
-        self.connect = None
-        self.setWindowTitle("Control Window")
-        #self.HBox = QHBoxLayout()
-        #self.VBox = QVBoxLayout()
-
-        #self.setCentralWidget(self.HBox)
-
-
-    def setConnect(self, arduino):
-        self.connect = arduino
-        self.main()
-
-    def main(self):
-
-        arduino = self.connect.arduino
-
-        while True:
-            data = arduino.readline()
-            data = data.decode('utf-8').rstrip('\n')
-            print(data)
