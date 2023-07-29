@@ -88,9 +88,6 @@ class PortConnection():
     def getPortName(self):
         return self.portName
 
-    def getArduino(self):
-        return self.arduino
-
     def printPortList(self):
         print (self.portList)
 

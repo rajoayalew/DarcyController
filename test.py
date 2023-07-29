@@ -1,4 +1,4 @@
-import sys
+"""import sys
 from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtCharts import QChart, QLineSeries, QChartView, QValueAxis
 from PySide6.QtCore import QPointF, Qt, QTimer
@@ -26,6 +26,8 @@ class Window(QMainWindow):
 
         self.series << QPointF(11, 1) << QPointF(13, 3) << QPointF(17, 6) << QPointF(18, 3) << QPointF(20, 2)
         self.series.append(30, 54)
+
+        self.series2 = None
 
         chart = QChart()
         self.XAxis = QValueAxis()
@@ -73,4 +75,6 @@ class Window(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = Window()
-    sys.exit(app.exec_())
+    sys.exit(app.exec_())"""
+
+

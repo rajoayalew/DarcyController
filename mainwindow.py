@@ -1,14 +1,14 @@
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QHBoxLayout, QVBoxLayout, QWidget, QPushButton
+from PySide6.QtWidgets import QMainWindow, QLabel, QHBoxLayout, QVBoxLayout, QWidget, QPushButton, QToolBar
 from PySide6.QtCore import Qt, QTimer
-from PySide6 import QtCharts
 from controlwindow import ControlWindow
 
 class MainWindow(QMainWindow):
     def __init__(self, app, connection):
         super().__init__()
-        
+
+        # connect is an instance of the PortController class defined in communications.py
         self.app = app
-        self.connect = connection
+        self.portConnect = connection
         self.setWindowTitle("Rocketify")
         self.controlWindow = ControlWindow()
 
@@ -16,25 +16,32 @@ class MainWindow(QMainWindow):
         menuBar = self.menuBar()
         fileMenu = menuBar.addMenu("&File")
 
+        # All possible actions as part of the file menu
         refreshAction = fileMenu.addAction("Refresh")
-        quitAction = fileMenu.addAction("Quit")
         disconnectAction = fileMenu.addAction("Disconnect")
         aboutAction = fileMenu.addAction("About")
+        quitAction = fileMenu.addAction("Quit")
 
+        # Links the act of clicking on the action to functions
         quitAction.triggered.connect(self.quitApp)
         refreshAction.triggered.connect(self.refreshPorts)
         disconnectAction.triggered.connect(self.disconnectArduino)
         aboutAction.triggered.connect(self.aboutMe)
 
+        # Initial label on start up
         self.label = QLabel("<font color=gray size=40>Attempting to connect to Arduino!</font>")
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setCentralWidget(self.label)
 
+        # Checks for ports
         self.refreshPorts()
 
     def disconnectArduino(self):
-        if (self.connect.getArduino().is_open):
-            self.connect.getArduino().close()
+        if (self.portConnect.getArduino() == None):
+            return
+
+        if (self.portConnect.getArduino().is_open):
+            self.portConnect.getArduino().close()
             self.label.setText("<font color=red size=40>Disconnected successfully</font>")
         else:
             pass
@@ -43,11 +50,13 @@ class MainWindow(QMainWindow):
         self.app.quit()
 
     def refreshPorts(self):
-        status = self.connect.connectToPortCode()
+        # PortCode is a function that returns a number indicating connection status
+        # PortCode is defined in communications.py
+        status = self.portConnect.connectToPortCode()
 
         match status:
             case 0:
-                portName = self.connect.getPortName()
+                portName = self.portConnect.getPortName()
                 string = "Successfully connected to Arduino on port " + portName + "."
                 self.label.setText("<font color=green size=40>{}</font>".format(string))
 
@@ -75,7 +84,7 @@ class MainWindow(QMainWindow):
         print ("not done")
 
     def connectControlWindow(self):
-        self.controlWindow.setConnect(self.connect)
+        self.controlWindow.setConnect(self.portConnect)
         self.close()
         self.controlWindow.show()
 
