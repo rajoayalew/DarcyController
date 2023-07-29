@@ -1,7 +1,7 @@
-from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QPushButton
+from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QPushButton, QSplitter
 from PySide6.QtCore import QTimer, Qt
-from PySide6.QtCharts import QChart, QLineSeries, QChartView, QValueAxis
-from PySide6.QtGui import QColor
+import pyqtgraph as pg
+from graph import DataGraph
 
 class ControlWindow(QMainWindow):
     def __init__(self):
@@ -11,8 +11,16 @@ class ControlWindow(QMainWindow):
         self.portConnect = None
         self.setWindowTitle("Control Window")
 
+        self.loadGraph = DataGraph(3, "LC", "Mass (kilograms)", "Time (sec)", "Load Cell Graph")
+        self.tempGraph = DataGraph(6, "TC", "Temperature (°F)", "Time (sec)", "Thermocouple Graph")
+        self.pressureGraph = DataGraph(6, "PT", "Pressure (atm)", "Time (sec)", "Pressure Transducer Graph")
+
         # Defines containers and layouts for the ControlWindow
         self.container = QWidget()
+        self.loadContainer = QWidget()
+        self.tempContainer = QWidget()
+        self.pressureContainer = QWidget()
+
         self.HBox = QHBoxLayout()
         self.VBoxGraph = QVBoxLayout()
         self.VBoxButton1 = QVBoxLayout()
@@ -23,70 +31,6 @@ class ControlWindow(QMainWindow):
         self.HBox.addLayout(self.VBoxButton1)
         self.HBox.addLayout(self.VBoxButton2)
         self.HBox.addLayout(self.VBoxButton3)
-
-        # Initializes the charts
-        LoadChart = QChart()
-        PressureChart = QChart()
-        TempChart = QChart()
-
-        # Initialize the X-Axis and the Y-Axis to be put onto the QCharts
-        LoadChartXAxis = QValueAxis()
-        LoadChartYAxis = QValueAxis()
-        LoadChartXAxis.setRange(0, 10)
-        LoadChartYAxis.setRange(0, 10)
-        LoadChartXAxis.setTickCount(10)
-        LoadChartYAxis.setTickCount(10)
-
-        LoadChart.addAxis(LoadChartXAxis, Qt.AlignmentFlag.AlignBottom)
-        LoadChart.addAxis(LoadChartYAxis, Qt.AlignmentFlag.AlignLeft)
-
-        # Displays the QChart
-        LoadChartView = QChartView(LoadChart)
-        PressureChartView = QChartView(PressureChart)
-        TempChartView = QChartView(TempChart)
-
-        # Initializing QLineSeries objects which will the ones that take in all the data from the sensors
-        engineLoad = QLineSeries()
-        tankLoad1 = QLineSeries()
-        tankLoad2 = QLineSeries()
-
-        pressureTank1 = QLineSeries()
-        pressureTank2 = QLineSeries()
-        pressureSys = QLineSeries()
-        pressureInject1 = QLineSeries()
-        pressureInject2 = QLineSeries()
-        pressureChamber = QLineSeries()
-
-        thermoTank = QLineSeries()
-        thermoEngine1 = QLineSeries()
-        thermoEngine2 = QLineSeries()
-        thermoEngine3 = QLineSeries()
-        thermoEngine4 = QLineSeries()
-        thermoEngine5 = QLineSeries()
-
-        # Set the color of the resulting line
-        engineLoad.setColor(QColor("blue"))
-        tankLoad1.setColor(QColor("red"))
-
-        # Appends a data point to the QLineSeries
-        engineLoad.append(0, 6)
-        engineLoad.append(1, 4)
-        tankLoad1.append(0, 2)
-        tankLoad1.append(1, 5)
-
-        # Attaches Series objects to the QChart instances
-        LoadChart.addSeries(engineLoad)
-        LoadChart.addSeries(tankLoad1)
-
-        #engineLoad.attachAxis(LoadChartYAxis)
-        #engineLoad.attachAxis(LoadChartYAxis)
-
-        #tankLoad1.attachAxis(LoadChartXAxis)
-        #tankLoad1.attachAxis(LoadChartYAxis)
-
-        PressureChart.addSeries(pressureTank1)
-
-        TempChart.addSeries(thermoTank)
 
         # Button used to toggle solenoids, linecutters, and the servos
         solenoid1 = QPushButton("Solenoid 1")
@@ -108,6 +52,10 @@ class ControlWindow(QMainWindow):
         servo4 = QPushButton("Servo 4")
 
         # Adds all the layouts, charts, and buttons to the application so it can be displayed
+        self.loadContainer.setLayout(self.loadGraph.getLayout())
+        self.tempContainer.setLayout(self.tempGraph.getLayout())
+        self.pressureContainer.setLayout(self.pressureGraph.getLayout())
+
         self.VBoxButton1.addWidget(solenoid1)
         self.VBoxButton1.addWidget(solenoid2)
         self.VBoxButton1.addWidget(solenoid3)
@@ -126,9 +74,9 @@ class ControlWindow(QMainWindow):
         self.VBoxButton3.addWidget(servo3)
         self.VBoxButton3.addWidget(servo4)
 
-        self.VBoxGraph.addWidget(LoadChartView)
-        self.VBoxGraph.addWidget(PressureChartView)
-        self.VBoxGraph.addWidget(TempChartView)
+        self.VBoxGraph.addWidget(self.loadContainer)
+        self.VBoxGraph.addWidget(self.tempContainer)
+        self.VBoxGraph.addWidget(self.pressureContainer)
 
         self.container.setLayout(self.HBox)
         self.setCentralWidget(self.container)
@@ -149,3 +97,4 @@ class ControlWindow(QMainWindow):
         dataTimer = QTimer(self)
         dataTimer.timeout.connect(self.readData)
         dataTimer.start(1000)
+

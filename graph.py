@@ -1,5 +1,5 @@
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QScrollBar, QWidget, QPushButton
-from pyqtgraph import PlotWidget
+from PySide6.QtWidgets import QMainWindow, QApplication, QVBoxLayout, QScrollBar, QWidget, QPushButton
+from pyqtgraph import PlotWidget, plot
 import pyqtgraph as pg
 from PySide6.QtCore import Qt, QTimer
 from random import randint
@@ -25,20 +25,29 @@ class RestrictedPlotWidget(PlotWidget):
         else:
             super().mouseDragEvent(ev)
 
-class MainWindow(QMainWindow):
+# Functions that may be useful
+# graphWidget.setTitle()
+# graphWidget.setLabel()
+#
 
-    def __init__(self):
-        super().__init__()
+class DataGraph():
+    def __init__(self, numberLines, sensorType, leftAxisName, bottomAxisName, titleName):
 
         self.graphWidget = RestrictedPlotWidget()
         self.plotItem = self.graphWidget.getPlotItem()
         self.viewBox = self.plotItem.getViewBox()
         self.scrollBar = QScrollBar(Qt.Orientation.Horizontal)
         self.toggleButton = QPushButton("Unlock Graph")
-        self.container = QWidget()
         self.layout = QVBoxLayout()
         self.locked = True
-        self.legend = pg.LegendItem(labelTextSize="12pt", offset=(40, 40))
+        self.legend = pg.LegendItem(labelTextSize="12pt", offset=(550, 40))
+        self.numberLine = numberLines
+        self.plots = []
+        self.sensorReadings = []
+        self.sensorType = sensorType
+        self.colors = [(0, 0, 0), (51, 102, 204), (0, 153, 51), (204, 51, 51),
+                       (153, 51, 153), (51, 153, 102), (255, 128, 0), (204, 204, 0)]
+        self.time = [0]
 
         self.scrollBar.setMinimum(0)
         self.scrollBar.setMaximum(1)
@@ -50,26 +59,23 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.scrollBar)
         self.layout.addWidget(self.toggleButton)
 
-        self.hour = [0, 1, 2, 3, 4, 5]
-        self.temp1 = [0, 10, 5, -3, 5, 2]
-        self.temp2 = [25, 2, 6, 12, 4, -5]
-        pen1 = pg.mkPen(color=(255, 0, 0))
-        pen2 = pg.mkPen(color=(0, 0, 255))
+        # I guess better hope we don't have more than 8 sensors because I only coded
+        # enough colors for 8
+        for i in range(numberLines):
+            sensorName = "{} #{}".format(sensorType, i)
+            self.sensorReadings.append([0])
+            self.plot = self.createPlot(self.time, self.sensorReadings[-1], sensorName, self.colors[i])
+            self.legend.addItem(self.plot, sensorName)
+            self.plots.append(self.plot)
 
         self.graphWidget.setBackground("w")
         self.graphWidget.showGrid(x=True, y=True)
-        self.graphWidget.setTitle("Temperature Sensors")
-        self.graphWidget.setLabel("left", "Temperature (°F)")
-        self.graphWidget.setLabel("bottom", "Time (seconds)")
+
+        self.graphWidget.setTitle(titleName)
+        self.graphWidget.setLabel("left", leftAxisName)
+        self.graphWidget.setLabel("bottom", bottomAxisName)
         self.legend.setParentItem(self.plotItem)
 
-        self.line1 = self.graphWidget.plot(self.hour, self.temp1, name="Sensor 1", pen=pen1, symbol='+', symbolSize=10)
-        self.line2 = self.graphWidget.plot(self.hour, self.temp2, name="Sensor 2", pen=pen2, symbol='+', symbolSize=10)
-        self.legend.addItem(self.line1, "Sensor 1")
-        self.legend.addItem(self.line2, "Sensor 2")
-
-        self.container.setLayout(self.layout)
-        self.setCentralWidget(self.container)
         self.scrollBar.valueChanged.connect(self.valueChanged)
 
         self.timer = QTimer()
@@ -77,8 +83,8 @@ class MainWindow(QMainWindow):
         self.timer.timeout.connect(self.update_plot_data)
         self.timer.start()
 
-    def plot(self, x, y, plotName, color, symbol):
-        pen = pg.mkPen(color=color)
+    def createPlot(self, x, y, plotName, color, symbol="+"):
+        pen = pg.mkPen(color=color, width=2)
         line = self.graphWidget.plot(x, y, pen=pen, name=plotName, symbol=symbol, symbolSize=10)
         return line
 
@@ -91,17 +97,17 @@ class MainWindow(QMainWindow):
             self.toggleButton.setText("Lock Graph")
 
     def update_plot_data(self):
-        self.hour.append(self.hour[-1] + 1)
-        self.temp1.append(randint(-50, 50))
-        self.temp2.append(randint(-50, 50))
+        self.time.append(self.time[-1] + 1)
 
-        self.line1.setData(self.hour, self.temp1)
-        self.line2.setData(self.hour, self.temp2)
+        for i in range(len(self.plots)):
+            self.selectPlot = self.plots[i]
+            self.sensorReadings[i].append(randint(-50, 50))
+            self.plots[i].setData(self.time, self.sensorReadings[i])
 
-        self.scrollBar.setMaximum(self.hour[-1])
+        self.scrollBar.setMaximum(self.time[-1])
 
         if (self.locked == True):
-            self.viewBox.setRange(xRange=(max(self.hour)-6, max(self.hour)+1))
+            self.viewBox.setRange(xRange=(max(self.time)-6, max(self.time)+1))
 
     def valueChanged(self):
         currentValue = self.scrollBar.value()
@@ -109,3 +115,15 @@ class MainWindow(QMainWindow):
         if (self.locked == False):
             self.viewBox.setRange(xRange=(currentValue - 5, currentValue + 5))
 
+    def updateSensorLine(self, sensorNumber, data):
+        self.selectPlot = self.plots[sensorNumber]
+        self.sensorType[sensorNumber].append(data)
+        self.selectPlot.setData(self.time, self.sensorReadings[sensorNumber])
+
+        self.scrollBar.setMaximum(self.time[-1])
+
+        if (self.locked == True):
+            self.viewBox.setRange(xRange=(max(self.hour)-6, max(self.hour)+1))
+
+    def getLayout(self):
+        return self.layout

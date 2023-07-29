@@ -1,80 +1,100 @@
-"""import sys
-from PySide6.QtWidgets import QApplication, QMainWindow
-from PySide6.QtCharts import QChart, QLineSeries, QChartView, QValueAxis
-from PySide6.QtCore import QPointF, Qt, QTimer
-from PySide6.QtGui import QPainter
-import random
+from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QPushButton, QSplitter
+from PySide6.QtCore import QTimer, Qt
+import pyqtgraph as pg
+from graph import DataGraph
 
-class Window(QMainWindow):
+class ControlWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("PySide6 Chart Example")
-        self.setGeometry(100, 100, 680, 500)
+        # self.connect is initially set to None but at some point will be set to be a PortController()
+        self.portConnect = None
+        self.setWindowTitle("Control Window")
 
-        self.show()
+        self.loadGraph = DataGraph(3, "LC", "Mass (kilograms)", "Time (sec)", "Load Cell Graph")
+        self.tempGraph = DataGraph(6, "TC", "Temperature (°F)", "Time (sec)", "Thermocouple Graph")
+        self.pressureGraph = DataGraph(6, "PT", "Pressure (atm)", "Time (sec)", "Pressure Transducer Graph")
 
-        self.create_linechart()
+        # Defines containers and layouts for the ControlWindow
+        self.container = QWidget()
+        self.loadContainer = QWidget()
+        self.tempContainer = QWidget()
+        self.pressureContainer = QWidget()
 
-    def create_linechart(self):
-        self.series = QLineSeries()
-        self.series.append(0, 6)
-        self.series.append(2, 4)
-        self.series.append(3, 8)
-        self.series.append(7, 4)
-        self.series.append(10, 5)
+        self.HBox = QHBoxLayout()
+        self.VBoxGraph = QVBoxLayout()
+        self.VBoxButton1 = QVBoxLayout()
+        self.VBoxButton2 = QVBoxLayout()
+        self.VBoxButton3 = QVBoxLayout()
 
-        self.series << QPointF(11, 1) << QPointF(13, 3) << QPointF(17, 6) << QPointF(18, 3) << QPointF(20, 2)
-        self.series.append(30, 54)
+        self.HBox.addLayout(self.VBoxGraph)
+        self.HBox.addLayout(self.VBoxButton1)
+        self.HBox.addLayout(self.VBoxButton2)
+        self.HBox.addLayout(self.VBoxButton3)
 
-        self.series2 = None
+        # Button used to toggle solenoids, linecutters, and the servos
+        solenoid1 = QPushButton("Solenoid 1")
+        solenoid2 = QPushButton("Solenoid 2")
+        solenoid3 = QPushButton("Solenoid 3")
+        solenoid4 = QPushButton("Solenoid 3")
+        solenoid5 = QPushButton("Solenoid 5")
+        solenoid6 = QPushButton("Solenoid 6")
+        solenoid7 = QPushButton("Solenoid 7")
+        solenoid8 = QPushButton("Solenoid 8")
 
-        chart = QChart()
-        self.XAxis = QValueAxis()
-        self.YAxis = QValueAxis()
+        linecutter1 = QPushButton("Line Cutter 1")
+        linecutter2 = QPushButton("Line Cutter 1")
+        igniter1 = QPushButton("Igniter 1")
 
-        chart.addAxis(self.XAxis, Qt.AlignmentFlag.AlignBottom)
-        chart.addAxis(self.YAxis, Qt.AlignmentFlag.AlignLeft)
+        servo1 = QPushButton("Servo 1")
+        servo2 = QPushButton("Servo 2")
+        servo3 = QPushButton("Servo 3")
+        servo4 = QPushButton("Servo 4")
 
-        chart.addSeries(self.series)
+        # Adds all the layouts, charts, and buttons to the application so it can be displayed
+        self.loadContainer.setLayout(self.loadGraph.getLayout())
+        self.tempContainer.setLayout(self.tempGraph.getLayout())
+        self.pressureContainer.setLayout(self.pressureGraph.getLayout())
 
-        self.series.attachAxis(self.XAxis)
-        self.series.attachAxis(self.YAxis)
+        self.VBoxButton1.addWidget(solenoid1)
+        self.VBoxButton1.addWidget(solenoid2)
+        self.VBoxButton1.addWidget(solenoid3)
+        self.VBoxButton1.addWidget(solenoid4)
+        self.VBoxButton1.addWidget(solenoid5)
 
-        #chart.createDefaultAxes()
-        chart.setTitle("Line Chart Example")
+        self.VBoxButton2.addWidget(solenoid6)
+        self.VBoxButton2.addWidget(solenoid7)
+        self.VBoxButton2.addWidget(solenoid8)
+        self.VBoxButton2.addWidget(linecutter1)
+        self.VBoxButton2.addWidget(linecutter2)
 
-        chart.legend().setVisible(True)
-        chart.legend().setAlignment(Qt.AlignBottom)
+        self.VBoxButton3.addWidget(igniter1)
+        self.VBoxButton3.addWidget(servo1)
+        self.VBoxButton3.addWidget(servo2)
+        self.VBoxButton3.addWidget(servo3)
+        self.VBoxButton3.addWidget(servo4)
 
-        chartview = QChartView(chart)
-        chartview.setRenderHint(QPainter.Antialiasing)
+        self.VBoxGraph.addWidget(self.loadContainer)
+        self.VBoxGraph.addWidget(self.tempContainer)
+        self.VBoxGraph.addWidget(self.pressureContainer)
 
-        self.setCentralWidget(chartview)
+        self.container.setLayout(self.HBox)
+        self.setCentralWidget(self.container)
 
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.addPoint)
-        self.timer.start(5000)
+    def setConnect(self, arduino):
+        self.portConnect = arduino
+        #self.main()
 
-    def addPoint(self):
-        maxX = self.XAxis.max()
-        maxY = self.YAxis.max()
+    def readData(self):
+        if self.portConnect is not None:
+            arduino = self.portConnect.arduino
+            data = arduino.readline()
+            data = data.decode('utf-8').rstrip('\n')
+            print (data)
 
-        x = random.randint(1 + maxX, 100 + maxX)
-        y = random.randint(0, 100)
+    def main(self):
 
-        self.XAxis.setMax(x)
-
-        if (y > maxY):
-            self.YAxis.setMax(y)
-
-        self.series.append(x, y)
-        print ("Appened values")
-        print (x, y)
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = Window()
-    sys.exit(app.exec_())"""
-
+        dataTimer = QTimer(self)
+        dataTimer.timeout.connect(self.readData)
+        dataTimer.start(1000)
 
