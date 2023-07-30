@@ -1,5 +1,5 @@
-from PySide6.QtWidgets import QVBoxLayout, QScrollBar, QWidget, QPushButton
-from pyqtgraph import PlotWidget, plot
+from PySide6.QtWidgets import QVBoxLayout, QScrollBar, QWidget, QPushButton, QMainWindow
+from pyqtgraph import PlotWidget
 import pyqtgraph as pg
 from PySide6.QtCore import Qt, QTimer
 from random import randint
@@ -47,6 +47,10 @@ class DataGraph():
         self.colors = [(0, 0, 0), (51, 102, 204), (204, 51, 51),
                        (153, 51, 153), (51, 153, 102), (255, 128, 0), (204, 204, 0)]
         self.time = [0]
+        self.menu = self.viewBox.getMenu(self)
+
+        popOutAction = self.menu.addAction("Pop Out")
+        popOutAction.triggered.connect(self.popOutGraph)
 
         self.scrollBar.setMinimum(0)
         self.scrollBar.setMaximum(1)
@@ -125,5 +129,21 @@ class DataGraph():
         if (self.locked == True):
             self.viewBox.setRange(xRange=(max(self.hour)-6, max(self.hour)+1))
 
+    def popOutGraph(self):
+        self.popOut = PopOutWindow(self)
+        self.popOut.show()
+
     def getLayout(self):
         return self.layout
+
+class PopOutWindow(QMainWindow):
+    def __init__(self, obj):
+        super().__init__()
+
+        self.dataGraph = obj
+        self.layout = obj.getLayout()
+
+        container = QWidget()
+        container.setLayout(self.layout)
+        self.setCentralWidget(container)
+
