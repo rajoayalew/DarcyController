@@ -1,78 +1,83 @@
 import serial.tools.list_ports
-import time
-import threading
+import sys
 
 class PortConnection():
     def __init__(self):
-        self.portList = []
         self.arduino = None
         self.portName = None
+        self.portList = serial.tools.list_ports.comports()
+        self.platform = sys.platform
 
     def updatePortList(self):
-        ports = serial.tools.list_ports.comports()
-        portsList = []
-
-        for port in ports:
-            port = str(port)
-            port = port.split(" ")[0]
-            portsList.append(port)
-
-        self.portList = portsList
-
-    def connectionStatus(self):
-        self.updatePortList()
-
-        portList = self.getPortList()
-
-        if (len(portList) == 0):
-            return 0
-        elif (len(portList) == 1):
-            return 1
-        elif (len(portList) > 1):
-            return 2
-        else:
-            return 3
-
-    def connectToPort(self):
-        if (self.connectionStatus() == 1):
-            connectedPort = self.portList[0]
-
-            try:
-                self.arduino = serial.Serial(connectedPort, 9600, timeout=10)
-                self.portName = connectedPort
-                return ("Succesffuly connected to Arduino on port " + connectedPort)
-            except (FileNotFoundError):
-                return ("Failed to connect to Arduino as the selected port doesn't exist.")
-            except:
-                return ("Unknown error.")
-        elif (self.connectionStatus == 0):
-            return ("There are no open ports to connect to.")
-        elif (self.connectionStatus > 1):
-            return ("There are more than one open port. Make sure you only have one Arduino plugged in")
-        elif (self.connectionStatus == 3):
-            return ("You really fucked up to get this error")
+        self.portList = serial.tools.list_ports.comports()
 
     def connectToPortCode(self):
-        if (self.connectionStatus() == 1):
-            connectedPort = self.portList[0]
+        self.updatePortList()
 
-            try:
-                self.arduino = serial.Serial(connectedPort, 9600, timeout=10)
-                self.portName = connectedPort
+        for port in self.portList:
+            if (self.platform == "win32"):
+
+                if "Arduino" in port.description:
+                    attemptedPort = str(port).split(" ")[0]
+                    code = self.connectHelper(attemptedPort)
+                    return code
+
+            elif (self.platform == "linux"):
+
+                if "Arduino" in port.manufacturer:
+                    attemptedPort = str(port).split(" ")[0]
+                    code = self.connectHelper(attemptedPort)
+                    return code
+
+            elif (self.platform == "darwin"):
+                return 3
+            else:
+                return 4
+
+        return 5
+
+    def connectToPort(self):
+        code = self.connectToPortCode()
+
+        match code:
+            case 0:
+                return ("Succesffuly connected to Arduino on port " + self.portName)
+            case 1:
+                return ("Failed to connect to Arduino as selected port doesn't exist")
+            case 2:
+                return ("Unknown error")
+            case 3:
+                return ("Get off MacOS")
+            case 4:
+                return ("You BSD folks will get support in maybe 5 years")
+            case 5:
+                return ("No Arduino detected. Try unplugging and replugging Arduino into computer")
+
+    def connectHelper(self, portName):
+        try:
+            self.arduino = serial.Serial(portName, 9600, timeout=10)
+            self.portName = portName
+            return 0
+        except (FileNotFoundError):
+            return 1
+        except:
+            return 2
+
+    def connectionStatus(self):
+        if (self.portName == None):
+            return 1
+
+        self.updatePortList()
+        testList = self.getHumanPortList()
+
+        for port in testList:
+            if (self.portName in port):
                 return 0
-            except (FileNotFoundError):
-                return 1
-            except:
-                return 2
-        elif (self.connectionStatus() == 0):
-            return 3
-        elif (self.connectionStatus() > 1):
-            return 4
-        elif (self.connectionStatus() == 3):
-            return 5
+
+        return 1
 
     def printLine(self):
-        if (self.connectionStatus() == 1):
+        if (self.connectionStatus() == 0):
             data = self.arduino.readline()
             data = data.decode('utf-8').rstrip('\n')
             print (data)
@@ -82,59 +87,15 @@ class PortConnection():
     def getArduino(self):
         return self.arduino
 
-    def getPortList(self):
-        return self.portList
+    def getPlatform(self):
+        return self.platform
 
     def getPortName(self):
         return self.portName
 
-    def printPortList(self):
-        print (self.portList)
+    def getPortList(self):
+        return self.portList
 
+    def getHumanPortList(self):
+        return [str(port).split(" ")[0] for port in list(serial.tools.list_ports.comports())]
 
-
-
-
-
-
-"""def check_presence(correct_port, interval=0.1):
-    while True:
-        openPorts = [str(port) for port in list(serial.tools.list_ports.comports())]
-
-        if correct_port not in openPorts:
-            print ("Arduino has been disconnected!")
-            break
-
-        time.sleep(interval)
-
-ports = serial.tools.list_ports.comports()
-portList = []
-
-for port in ports:
-    portList.append(str(port))
-    #print(str(port))
-
-if (len(portList) > 1):
-    print ("There are more than one serial port connected " +
-           "indicating you have more than one thing connected")
-
-if (len(portList) == 0):
-    print ("Arduino is not connected")
-
-connectedPort = (portList[0].split(" "))[0]
-arduinoPort = portList[0]
-
-arduino = serial.Serial(connectedPort, 9600, timeout=10)
-
-port_controller = threading.Thread(target=check_presence, args=(arduinoPort, 0.1))
-port_controller.setDaemon(True)
-port_controller.start()
-
-print (arduino.name)
-
-while True:
-    data = arduino.readline()
-    data = data.decode('utf-8').rstrip('\n')
-    print(data)
-
-"""

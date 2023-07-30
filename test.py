@@ -1,100 +1,43 @@
-from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QPushButton, QSplitter
-from PySide6.QtCore import QTimer, Qt
 import pyqtgraph as pg
-from graph import DataGraph
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget
+from PySide6.QtCore import Qt
 
-class ControlWindow(QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        # self.connect is initially set to None but at some point will be set to be a PortController()
-        self.portConnect = None
-        self.setWindowTitle("Control Window")
+        self.setWindowTitle("LegendItem Example")
 
-        self.loadGraph = DataGraph(3, "LC", "Mass (kilograms)", "Time (sec)", "Load Cell Graph")
-        self.tempGraph = DataGraph(6, "TC", "Temperature (°F)", "Time (sec)", "Thermocouple Graph")
-        self.pressureGraph = DataGraph(6, "PT", "Pressure (atm)", "Time (sec)", "Pressure Transducer Graph")
+        # Create a PlotWidget
+        self.plotWidget = pg.PlotWidget()
+        self.plotWidget.showGrid(x=True, y=True)
 
-        # Defines containers and layouts for the ControlWindow
-        self.container = QWidget()
-        self.loadContainer = QWidget()
-        self.tempContainer = QWidget()
-        self.pressureContainer = QWidget()
+        # Add some data to the plot
+        self.plot = self.plotWidget.plot([1, 2, 3, 4], [1, 2, 3, 4], pen='b', symbol='o', symbolSize=10)
 
-        self.HBox = QHBoxLayout()
-        self.VBoxGraph = QVBoxLayout()
-        self.VBoxButton1 = QVBoxLayout()
-        self.VBoxButton2 = QVBoxLayout()
-        self.VBoxButton3 = QVBoxLayout()
+        # Create a LegendItem and set its anchor position to top-right with an offset of (10, 10) pixels
+        self.legend = pg.LegendItem(offset=(10, 10))
+        self.plotWidget.addItem(self.legend, anchor=(1, 1), row=0, col=1)
 
-        self.HBox.addLayout(self.VBoxGraph)
-        self.HBox.addLayout(self.VBoxButton1)
-        self.HBox.addLayout(self.VBoxButton2)
-        self.HBox.addLayout(self.VBoxButton3)
+        # Add an item to the legend
+        self.legend.addItem(self.plot, "Data")
 
-        # Button used to toggle solenoids, linecutters, and the servos
-        solenoid1 = QPushButton("Solenoid 1")
-        solenoid2 = QPushButton("Solenoid 2")
-        solenoid3 = QPushButton("Solenoid 3")
-        solenoid4 = QPushButton("Solenoid 3")
-        solenoid5 = QPushButton("Solenoid 5")
-        solenoid6 = QPushButton("Solenoid 6")
-        solenoid7 = QPushButton("Solenoid 7")
-        solenoid8 = QPushButton("Solenoid 8")
+        # Create a layout and set the plotWidget as the central widget
+        layout = QVBoxLayout()
+        layout.addWidget(self.plotWidget)
 
-        linecutter1 = QPushButton("Line Cutter 1")
-        linecutter2 = QPushButton("Line Cutter 1")
-        igniter1 = QPushButton("Igniter 1")
+        container = QWidget()
+        container.setLayout(layout)
+        self.setCentralWidget(container)
 
-        servo1 = QPushButton("Servo 1")
-        servo2 = QPushButton("Servo 2")
-        servo3 = QPushButton("Servo 3")
-        servo4 = QPushButton("Servo 4")
 
-        # Adds all the layouts, charts, and buttons to the application so it can be displayed
-        self.loadContainer.setLayout(self.loadGraph.getLayout())
-        self.tempContainer.setLayout(self.tempGraph.getLayout())
-        self.pressureContainer.setLayout(self.pressureGraph.getLayout())
+if __name__ == "__main__":
+    import sys
+    from PySide6.QtWidgets import QApplication
 
-        self.VBoxButton1.addWidget(solenoid1)
-        self.VBoxButton1.addWidget(solenoid2)
-        self.VBoxButton1.addWidget(solenoid3)
-        self.VBoxButton1.addWidget(solenoid4)
-        self.VBoxButton1.addWidget(solenoid5)
+    app = QApplication(sys.argv)
 
-        self.VBoxButton2.addWidget(solenoid6)
-        self.VBoxButton2.addWidget(solenoid7)
-        self.VBoxButton2.addWidget(solenoid8)
-        self.VBoxButton2.addWidget(linecutter1)
-        self.VBoxButton2.addWidget(linecutter2)
+    window = MainWindow()
+    window.show()
 
-        self.VBoxButton3.addWidget(igniter1)
-        self.VBoxButton3.addWidget(servo1)
-        self.VBoxButton3.addWidget(servo2)
-        self.VBoxButton3.addWidget(servo3)
-        self.VBoxButton3.addWidget(servo4)
-
-        self.VBoxGraph.addWidget(self.loadContainer)
-        self.VBoxGraph.addWidget(self.tempContainer)
-        self.VBoxGraph.addWidget(self.pressureContainer)
-
-        self.container.setLayout(self.HBox)
-        self.setCentralWidget(self.container)
-
-    def setConnect(self, arduino):
-        self.portConnect = arduino
-        #self.main()
-
-    def readData(self):
-        if self.portConnect is not None:
-            arduino = self.portConnect.arduino
-            data = arduino.readline()
-            data = data.decode('utf-8').rstrip('\n')
-            print (data)
-
-    def main(self):
-
-        dataTimer = QTimer(self)
-        dataTimer.timeout.connect(self.readData)
-        dataTimer.start(1000)
-
+    sys.exit(app.exec_())

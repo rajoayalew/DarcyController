@@ -1,6 +1,5 @@
-from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QPushButton, QSplitter
+from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QPushButton, QSplitter, QLabel
 from PySide6.QtCore import QTimer, Qt
-import pyqtgraph as pg
 from graph import DataGraph
 
 class ControlWindow(QMainWindow):
@@ -16,21 +15,18 @@ class ControlWindow(QMainWindow):
         self.pressureGraph = DataGraph(6, "PT", "Pressure (atm)", "Time (sec)", "Pressure Transducer Graph")
 
         # Defines containers and layouts for the ControlWindow
-        self.container = QWidget()
         self.loadContainer = QWidget()
         self.tempContainer = QWidget()
         self.pressureContainer = QWidget()
+        self.b1container = QWidget()
+        self.b2container = QWidget()
+        self.b3container = QWidget()
+        self.graphContainer = QWidget()
 
-        self.HBox = QHBoxLayout()
         self.VBoxGraph = QVBoxLayout()
         self.VBoxButton1 = QVBoxLayout()
         self.VBoxButton2 = QVBoxLayout()
         self.VBoxButton3 = QVBoxLayout()
-
-        self.HBox.addLayout(self.VBoxGraph)
-        self.HBox.addLayout(self.VBoxButton1)
-        self.HBox.addLayout(self.VBoxButton2)
-        self.HBox.addLayout(self.VBoxButton3)
 
         # Button used to toggle solenoids, linecutters, and the servos
         solenoid1 = QPushButton("Solenoid 1")
@@ -78,8 +74,18 @@ class ControlWindow(QMainWindow):
         self.VBoxGraph.addWidget(self.tempContainer)
         self.VBoxGraph.addWidget(self.pressureContainer)
 
-        self.container.setLayout(self.HBox)
-        self.setCentralWidget(self.container)
+        self.b1container.setLayout(self.VBoxButton1)
+        self.b2container.setLayout(self.VBoxButton2)
+        self.b3container.setLayout(self.VBoxButton3)
+        self.graphContainer.setLayout(self.VBoxGraph)
+
+        splitter = QSplitter(Qt.Orientation.Horizontal)
+        splitter.addWidget(self.graphContainer)
+        splitter.addWidget(self.b1container)
+        splitter.addWidget(self.b2container)
+        splitter.addWidget(self.b3container)
+
+        self.setCentralWidget(splitter)
 
     def setConnect(self, arduino):
         self.portConnect = arduino

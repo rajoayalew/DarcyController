@@ -67,18 +67,16 @@ class MainWindow(QMainWindow):
 
             case 1:
                 self.label.setText("<font color=red size=40>Failed to connect to Arduino" +
-                                   " as selected port doesn't exist</font>")
+                                   " as selected port doesn't exist.</font>")
             case 2:
                 self.label.setText("<font color=red size=40>Unknown error.</font>")
             case 3:
-                self.label.setText("<font color=red size=40>There are no open" +
-                                    " ports to connect to.</font>")
+                self.label.setText("<font color=red size=40>Get off MacOS.</font>")
             case 4:
-                self.label.setText("<font color=red size=40>There are more than one open port." +
-                                    " Make sure you only have one Arduino plugged in.</font>")
+                self.label.setText("<font color=red size=40>Unsupported OS</font>")
             case 5:
-                self.label.setText("<font color=red size=40>You really fucked" +
-                                    " up to get this error.</font>")
+                self.label.setText("<font color=red size=40>No Arduino detected. Try unplugging" +
+                                   " and replugging Arduino into computer</font>")
 
     def aboutMe(self):
         print ("not done")

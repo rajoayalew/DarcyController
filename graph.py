@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QApplication, QVBoxLayout, QScrollBar, QWidget, QPushButton
+from PySide6.QtWidgets import QVBoxLayout, QScrollBar, QWidget, QPushButton
 from pyqtgraph import PlotWidget, plot
 import pyqtgraph as pg
 from PySide6.QtCore import Qt, QTimer
@@ -28,7 +28,6 @@ class RestrictedPlotWidget(PlotWidget):
 # Functions that may be useful
 # graphWidget.setTitle()
 # graphWidget.setLabel()
-#
 
 class DataGraph():
     def __init__(self, numberLines, sensorType, leftAxisName, bottomAxisName, titleName):
@@ -45,7 +44,7 @@ class DataGraph():
         self.plots = []
         self.sensorReadings = []
         self.sensorType = sensorType
-        self.colors = [(0, 0, 0), (51, 102, 204), (0, 153, 51), (204, 51, 51),
+        self.colors = [(0, 0, 0), (51, 102, 204), (204, 51, 51),
                        (153, 51, 153), (51, 153, 102), (255, 128, 0), (204, 204, 0)]
         self.time = [0]
 
@@ -75,6 +74,7 @@ class DataGraph():
         self.graphWidget.setLabel("left", leftAxisName)
         self.graphWidget.setLabel("bottom", bottomAxisName)
         self.legend.setParentItem(self.plotItem)
+        self.legend.anchor(itemPos=(1,0), parentPos=(1,0), offset=(-10,10))
 
         self.scrollBar.valueChanged.connect(self.valueChanged)
 
