@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QVBoxLayout, QScrollBar, QWidget, QPushButton, QMainWindow
 from pyqtgraph import PlotWidget
 import pyqtgraph as pg
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt, QTimer, Signal, QObject
 from random import randint
 
 class RestrictedPlotWidget(PlotWidget):
@@ -29,8 +29,11 @@ class RestrictedPlotWidget(PlotWidget):
 # graphWidget.setTitle()
 # graphWidget.setLabel()
 
-class DataGraph():
-    def __init__(self, numberLines, sensorType, leftAxisName, bottomAxisName, titleName):
+class DataGraph(QObject):
+    popOutClicked = Signal(int)
+
+    def __init__(self, numberLines, sensorType, leftAxisName, bottomAxisName, titleName, num, poppedOut=False):
+        super().__init__()
 
         self.graphWidget = RestrictedPlotWidget()
         self.plotItem = self.graphWidget.getPlotItem()
@@ -39,7 +42,7 @@ class DataGraph():
         self.toggleButton = QPushButton("Unlock Graph")
         self.layout = QVBoxLayout()
         self.locked = True
-        self.legend = pg.LegendItem(labelTextSize="12pt", offset=(550, 40))
+        self.legend = pg.LegendItem(labelTextSize="12pt")
         self.numberLine = numberLines
         self.plots = []
         self.sensorReadings = []
@@ -48,9 +51,14 @@ class DataGraph():
                        (153, 51, 153), (51, 153, 102), (255, 128, 0), (204, 204, 0)]
         self.time = [0]
         self.menu = self.viewBox.getMenu(self)
+        self.id = num
+        self.popOutAction = None
+        self.titleName = titleName
+        self.poppedOut = poppedOut
 
-        popOutAction = self.menu.addAction("Pop Out")
-        popOutAction.triggered.connect(self.popOutGraph)
+        self.popOutAction = self.menu.addAction("Pop Out")
+        self.popOutAction.triggered.connect(self.popOutGraph)
+        print (self.poppedOut)
 
         self.scrollBar.setMinimum(0)
         self.scrollBar.setMaximum(1)
@@ -74,7 +82,7 @@ class DataGraph():
         self.graphWidget.setBackground("w")
         self.graphWidget.showGrid(x=True, y=True)
 
-        self.graphWidget.setTitle(titleName)
+        self.graphWidget.setTitle(self.titleName)
         self.graphWidget.setLabel("left", leftAxisName)
         self.graphWidget.setLabel("bottom", bottomAxisName)
         self.legend.setParentItem(self.plotItem)
@@ -130,20 +138,42 @@ class DataGraph():
             self.viewBox.setRange(xRange=(max(self.hour)-6, max(self.hour)+1))
 
     def popOutGraph(self):
-        self.popOut = PopOutWindow(self)
-        self.popOut.show()
+        self.popOutClicked.emit(self.id)
+
+    def switchPopOutAction(self):
+        print (self.poppedOut)
+
+        if (self.poppedOut == False):
+            self.popOutAction = self.menu.addAction("Pop Out")
+            self.popOutAction.triggered.connect(self.popOutGraph)
+        else:
+            print ("here")
+            self.menu.removeAction(self.popOutAction)
 
     def getLayout(self):
         return self.layout
 
+    def getTitleName(self):
+        return self.titleName
+
 class PopOutWindow(QMainWindow):
-    def __init__(self, obj):
+    sendBackClose = Signal(QWidget)
+
+    def __init__(self, widget, obj):
         super().__init__()
 
-        self.dataGraph = obj
-        self.layout = obj.getLayout()
+        self.widget = widget
+        self.obj = obj
+        self.obj.poppedOut = True
+        self.obj.switchPopOutAction()
 
-        container = QWidget()
-        container.setLayout(self.layout)
-        self.setCentralWidget(container)
+        self.setWindowTitle("Popped Out Graph")
+        self.setCentralWidget(self.widget)
+
+    def closeEvent(self, event):
+        self.obj.poppedOut = False
+        self.obj.switchPopOutAction()
+        self.sendBackClose.emit(self.widget)
+
+
 

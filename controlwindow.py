@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QPushButton, QSplitter, QLabel
-from PySide6.QtCore import QTimer, Qt
-from graph import DataGraph
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QSplitter, QLabel, QGridLayout
+from PySide6.QtCore import QTimer, Qt, Slot
+from graph import DataGraph, PopOutWindow
 
 class ControlWindow(QMainWindow):
     def __init__(self):
@@ -9,10 +9,15 @@ class ControlWindow(QMainWindow):
         # self.connect is initially set to None but at some point will be set to be a PortController()
         self.portConnect = None
         self.setWindowTitle("Control Window")
+        self.popOutWindows = {}
 
-        self.loadGraph = DataGraph(3, "LC", "Mass (kilograms)", "Time (sec)", "Load Cell Graph")
-        self.tempGraph = DataGraph(6, "TC", "Temperature (°F)", "Time (sec)", "Thermocouple Graph")
-        self.pressureGraph = DataGraph(6, "PT", "Pressure (atm)", "Time (sec)", "Pressure Transducer Graph")
+        self.loadGraph = DataGraph(3, "LC", "Mass (kilograms)", "Time (sec)", "Load Cell Graph", 0)
+        self.tempGraph = DataGraph(6, "TC", "Temperature (°F)", "Time (sec)", "Thermocouple Graph", 1)
+        self.pressureGraph = DataGraph(6, "PT", "Pressure (atm)", "Time (sec)", "Pressure Transducer Graph", 2)
+
+        self.loadGraph.popOutClicked.connect(self.handlePopOutClicked)
+        self.tempGraph.popOutClicked.connect(self.handlePopOutClicked)
+        self.pressureGraph.popOutClicked.connect(self.handlePopOutClicked)
 
         # Defines containers and layouts for the ControlWindow
         self.loadContainer = QWidget()
@@ -87,9 +92,34 @@ class ControlWindow(QMainWindow):
 
         self.setCentralWidget(splitter)
 
+    @Slot(int)
+    def handlePopOutClicked(self, num):
+        obj = None
+        widget = None
+
+        if (num == 0):
+            obj = self.loadGraph
+            widget = self.loadContainer
+        elif (num == 1):
+            obj = self.tempGraph
+            widget = self.tempContainer
+        elif (num == 2):
+            obj = self.pressureGraph
+            widget = self.pressureContainer
+
+        self.VBoxGraph.removeWidget(widget)
+
+        if widget not in self.popOutWindows.values():
+            self.popOutWindows[num] = PopOutWindow(widget, obj)
+            self.popOutWindows[num].sendBackClose.connect(self.handleSendBackWidget)
+            self.popOutWindows[num].show()
+
+    @Slot(QWidget)
+    def handleSendBackWidget(self, widget):
+        self.VBoxGraph.addWidget(widget)
+
     def setConnect(self, arduino):
         self.portConnect = arduino
-        #self.main()
 
     def readData(self):
         if self.portConnect is not None:
@@ -98,9 +128,17 @@ class ControlWindow(QMainWindow):
             data = data.decode('utf-8').rstrip('\n')
             print (data)
 
+    def closeEvent(self, event):
+        numOfOpenWindows = len(self.popOutWindows.values())
+
+        if (numOfOpenWindows != 0):
+            for i in range(0, numOfOpenWindows):
+                self.popOutWindows[i].close()
+
     def main(self):
 
         dataTimer = QTimer(self)
         dataTimer.timeout.connect(self.readData)
         dataTimer.start(1000)
+
 
