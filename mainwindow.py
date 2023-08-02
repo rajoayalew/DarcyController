@@ -10,7 +10,7 @@ class MainWindow(QMainWindow):
         self.app = app
         self.portConnect = connection
         self.setWindowTitle("Rocketify")
-        self.controlWindow = ControlWindow()
+        self.controlWindow = ControlWindow(self.portConnect)
 
         # Menu bar and sub menus
         menuBar = self.menuBar()
@@ -82,7 +82,6 @@ class MainWindow(QMainWindow):
         print ("not done")
 
     def connectControlWindow(self):
-        self.controlWindow.setConnect(self.portConnect)
         self.close()
         self.controlWindow.show()
 

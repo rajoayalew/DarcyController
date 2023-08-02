@@ -3,11 +3,11 @@ from PySide6.QtCore import QTimer, Qt, Slot
 from graph import DataGraph, PopOutWindow
 
 class ControlWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, port):
         super().__init__()
 
-        # self.connect is initially set to None but at some point will be set to be a PortController()
-        self.portConnect = None
+        # self.connect is initially set to None but at some point will be set to be a PortController() change later maybe
+        self.portConnect = port
         self.setWindowTitle("Control Window")
         self.popOutWindows = {}
 
@@ -34,10 +34,21 @@ class ControlWindow(QMainWindow):
         servoHBox = QHBoxLayout()
         abortHBox = QHBoxLayout()
 
-        solenoidLabel = QLabel("<font color=white size=5>Solenoids</font>")
-        lineIgniterLabel = QLabel("<font color=white size=5>Line Cutters and Igniters</font>")
-        servoLabel = QLabel("<font color=white size=5>Servo Motors</font>")
-        abortLabel = QLabel("<font color=white size=5>Aborts and Autosequences</font>")
+        solenoidLabel = None
+        lineIgniterLabel = None
+        servoLabel = None
+        abortLabel = None
+
+        if (self.portConnect.getPlatform() == "linux"):
+            solenoidLabel = QLabel("<font color=white size=5>Solenoids</font>")
+            lineIgniterLabel = QLabel("<font color=white size=5>Line Cutters and Igniters</font>")
+            servoLabel = QLabel("<font color=white size=5>Servo Motors</font>")
+            abortLabel = QLabel("<font color=white size=5>Aborts and Autosequences</font>")
+        elif (self.portConnect.getPlatform() == "win32"):
+            solenoidLabel = QLabel("<font color=black size=5>Solenoids</font>")
+            lineIgniterLabel = QLabel("<font color=black size=5>Line Cutters and Igniters</font>")
+            servoLabel = QLabel("<font color=black size=5>Servo Motors</font>")
+            abortLabel = QLabel("<font color=black size=5>Aborts and Autosequences</font>")
 
         solenoidLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         lineIgniterLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -153,6 +164,8 @@ class ControlWindow(QMainWindow):
             data = arduino.readline()
             data = data.decode('utf-8').rstrip('\n')
             print (data)
+        else:
+            print ("Not connect")
 
     def closeEvent(self, event):
         numOfOpenWindows = len(self.popOutWindows.values())
