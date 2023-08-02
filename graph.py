@@ -58,7 +58,6 @@ class DataGraph(QObject):
 
         self.popOutAction = self.menu.addAction("Pop Out")
         self.popOutAction.triggered.connect(self.popOutGraph)
-        print (self.poppedOut)
 
         self.scrollBar.setMinimum(0)
         self.scrollBar.setMaximum(1)
@@ -141,13 +140,11 @@ class DataGraph(QObject):
         self.popOutClicked.emit(self.id)
 
     def switchPopOutAction(self):
-        print (self.poppedOut)
 
         if (self.poppedOut == False):
             self.popOutAction = self.menu.addAction("Pop Out")
             self.popOutAction.triggered.connect(self.popOutGraph)
         else:
-            print ("here")
             self.menu.removeAction(self.popOutAction)
 
     def getLayout(self):

@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QSplitter, QLabel, QGridLayout
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QSplitter, QLabel, QHBoxLayout, QSizePolicy
 from PySide6.QtCore import QTimer, Qt, Slot
 from graph import DataGraph, PopOutWindow
 
@@ -23,17 +23,27 @@ class ControlWindow(QMainWindow):
         self.loadContainer = QWidget()
         self.tempContainer = QWidget()
         self.pressureContainer = QWidget()
-        self.b1container = QWidget()
-        self.b2container = QWidget()
-        self.b3container = QWidget()
         self.graphContainer = QWidget()
-
         self.VBoxGraph = QVBoxLayout()
-        self.VBoxButton1 = QVBoxLayout()
-        self.VBoxButton2 = QVBoxLayout()
-        self.VBoxButton3 = QVBoxLayout()
 
-        # Button used to toggle solenoids, linecutters, and the servos
+        buttonContainer = QWidget()
+        mainButtonBox = QVBoxLayout()
+        solenoidHBox1 = QHBoxLayout()
+        solenoidHBox2 = QHBoxLayout()
+        lineIgniteHBox = QHBoxLayout()
+        servoHBox = QHBoxLayout()
+        abortHBox = QHBoxLayout()
+
+        solenoidLabel = QLabel("<font color=white size=5>Solenoids</font>")
+        lineIgniterLabel = QLabel("<font color=white size=5>Line Cutters and Igniters</font>")
+        servoLabel = QLabel("<font color=white size=5>Servo Motors</font>")
+        abortLabel = QLabel("<font color=white size=5>Aborts and Autosequences</font>")
+
+        solenoidLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        lineIgniterLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        servoLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        abortLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
         solenoid1 = QPushButton("Solenoid 1")
         solenoid2 = QPushButton("Solenoid 2")
         solenoid3 = QPushButton("Solenoid 3")
@@ -52,43 +62,59 @@ class ControlWindow(QMainWindow):
         servo3 = QPushButton("Servo 3")
         servo4 = QPushButton("Servo 4")
 
-        # Adds all the layouts, charts, and buttons to the application so it can be displayed
+        abortA = QPushButton("Type-A Abort")
+        abortB = QPushButton("Type-B Abort")
+        autoSequence = QPushButton("Run Autosequence")
+
+        solenoidHBox1.addWidget(solenoid1)
+        solenoidHBox1.addWidget(solenoid2)
+        solenoidHBox1.addWidget(solenoid3)
+        solenoidHBox1.addWidget(solenoid4)
+
+        solenoidHBox2.addWidget(solenoid5)
+        solenoidHBox2.addWidget(solenoid6)
+        solenoidHBox2.addWidget(solenoid7)
+        solenoidHBox2.addWidget(solenoid8)
+
+        lineIgniteHBox.addWidget(linecutter1)
+        lineIgniteHBox.addWidget(linecutter2)
+        lineIgniteHBox.addWidget(igniter1)
+
+        servoHBox.addWidget(servo1)
+        servoHBox.addWidget(servo2)
+        servoHBox.addWidget(servo3)
+        servoHBox.addWidget(servo4)
+
+        abortHBox.addWidget(abortA)
+        abortHBox.addWidget(abortB)
+        abortHBox.addWidget(autoSequence)
+
+        mainButtonBox.addWidget(solenoidLabel)
+        mainButtonBox.addLayout(solenoidHBox1)
+        mainButtonBox.addLayout(solenoidHBox2)
+        mainButtonBox.addWidget(lineIgniterLabel)
+        mainButtonBox.addLayout(lineIgniteHBox)
+        mainButtonBox.addWidget(servoLabel)
+        mainButtonBox.addLayout(servoHBox)
+        mainButtonBox.addWidget(abortLabel)
+        mainButtonBox.addLayout(abortHBox)
+        mainButtonBox.addSpacing(10)
+
         self.loadContainer.setLayout(self.loadGraph.getLayout())
         self.tempContainer.setLayout(self.tempGraph.getLayout())
         self.pressureContainer.setLayout(self.pressureGraph.getLayout())
-
-        self.VBoxButton1.addWidget(solenoid1)
-        self.VBoxButton1.addWidget(solenoid2)
-        self.VBoxButton1.addWidget(solenoid3)
-        self.VBoxButton1.addWidget(solenoid4)
-        self.VBoxButton1.addWidget(solenoid5)
-
-        self.VBoxButton2.addWidget(solenoid6)
-        self.VBoxButton2.addWidget(solenoid7)
-        self.VBoxButton2.addWidget(solenoid8)
-        self.VBoxButton2.addWidget(linecutter1)
-        self.VBoxButton2.addWidget(linecutter2)
-
-        self.VBoxButton3.addWidget(igniter1)
-        self.VBoxButton3.addWidget(servo1)
-        self.VBoxButton3.addWidget(servo2)
-        self.VBoxButton3.addWidget(servo3)
-        self.VBoxButton3.addWidget(servo4)
 
         self.VBoxGraph.addWidget(self.loadContainer)
         self.VBoxGraph.addWidget(self.tempContainer)
         self.VBoxGraph.addWidget(self.pressureContainer)
 
-        self.b1container.setLayout(self.VBoxButton1)
-        self.b2container.setLayout(self.VBoxButton2)
-        self.b3container.setLayout(self.VBoxButton3)
+        buttonContainer.setLayout(mainButtonBox)
+
         self.graphContainer.setLayout(self.VBoxGraph)
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.addWidget(self.graphContainer)
-        splitter.addWidget(self.b1container)
-        splitter.addWidget(self.b2container)
-        splitter.addWidget(self.b3container)
+        splitter.addWidget(buttonContainer)
 
         self.setCentralWidget(splitter)
 
