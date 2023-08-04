@@ -1,93 +1,33 @@
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QSplitter, QLabel, QGridLayout, QHBoxLayout, QApplication
-from PySide6.QtCore import Qt
+from communications import PortConnection
+import serial
+import time
 
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
+port = PortConnection()
+print(port.connectToPort())
+time.sleep(1)
+#port.sendHeartbeat()
+#time.sleep(0.5)
 
-        totalContainer = QWidget()
-        mainButtonBox = QVBoxLayout()
+"""
+arduino = port.getArduino()
 
-        # Add stretch to make buttons resize automatically
+def write_read(x):
+    arduino.write(bytes(x,  'utf-8'))
+    time.sleep(0.05)
+    data = arduino.readline().decode('utf-8').rstrip('\n')
+    return  data
+"""
 
-        solenoidHBox1 = QHBoxLayout()
-        solenoidHBox2 = QHBoxLayout()
-        lineIgniteHBox = QHBoxLayout()
-        servoHBox = QHBoxLayout()
-        abortHBox = QHBoxLayout()
+arduino = port.getArduino()
 
-        solenoidLabel = QLabel("Solenoids")
-        lineIgniterLabel = QLabel("Line Cutters and Igniters")
-        servoLabel = QLabel("Servo Label")
-        abortLabel = QLabel("Aborts and Starts")
+while True:
 
-        solenoidLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        lineIgniterLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        servoLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        abortLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    x = input("Enter a message: ")
+    port.arduino.write(x.encode('utf-8'))
+    #print (port.arduino.in_waiting)
+    time.sleep(0.5)
 
-        solenoid1 = QPushButton("Solenoid 1")
-        solenoid2 = QPushButton("Solenoid 2")
-        solenoid3 = QPushButton("Solenoid 3")
-        solenoid4 = QPushButton("Solenoid 3")
-        solenoid5 = QPushButton("Solenoid 5")
-        solenoid6 = QPushButton("Solenoid 6")
-        solenoid7 = QPushButton("Solenoid 7")
-        solenoid8 = QPushButton("Solenoid 8")
+    if (port.arduino.in_waiting > 0):
+        print (arduino.readline().decode('utf-8').rstrip('\n'))
+        # port.printLine()
 
-        linecutter1 = QPushButton("Line Cutter 1")
-        linecutter2 = QPushButton("Line Cutter 1")
-        igniter1 = QPushButton("Igniter 1")
-
-        servo1 = QPushButton("Servo 1")
-        servo2 = QPushButton("Servo 2")
-        servo3 = QPushButton("Servo 3")
-        servo4 = QPushButton("Servo 4")
-
-        abortA = QPushButton("Type-A Abort")
-        abortB = QPushButton("Type-B Abort")
-        autoSequence = QPushButton("Run Autosequence")
-
-        solenoidHBox1.addWidget(solenoid1)
-        solenoidHBox1.addWidget(solenoid2)
-        solenoidHBox1.addWidget(solenoid3)
-        solenoidHBox1.addWidget(solenoid4)
-
-        solenoidHBox2.addWidget(solenoid5)
-        solenoidHBox2.addWidget(solenoid6)
-        solenoidHBox2.addWidget(solenoid7)
-        solenoidHBox2.addWidget(solenoid8)
-
-        lineIgniteHBox.addWidget(linecutter1)
-        lineIgniteHBox.addWidget(linecutter2)
-        lineIgniteHBox.addWidget(igniter1)
-
-        servoHBox.addWidget(servo1)
-        servoHBox.addWidget(servo2)
-        servoHBox.addWidget(servo3)
-        servoHBox.addWidget(servo4)
-
-        abortHBox.addWidget(abortA)
-        abortHBox.addWidget(abortB)
-        abortHBox.addWidget(autoSequence)
-
-        mainButtonBox.addWidget(solenoidLabel)
-        mainButtonBox.addLayout(solenoidHBox1)
-        mainButtonBox.addLayout(solenoidHBox2)
-        mainButtonBox.addWidget(lineIgniterLabel)
-        mainButtonBox.addLayout(lineIgniteHBox)
-        mainButtonBox.addWidget(servoLabel)
-        mainButtonBox.addLayout(servoHBox)
-        mainButtonBox.addWidget(abortLabel)
-        mainButtonBox.addLayout(abortHBox)
-
-        # Add stretch to make buttons resize automatically
-
-
-        totalContainer.setLayout(mainButtonBox)
-        self.setCentralWidget(totalContainer)
-
-app = QApplication([])
-window = MainWindow()
-window.show()
-app.exec()

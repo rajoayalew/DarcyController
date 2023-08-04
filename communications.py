@@ -41,7 +41,7 @@ class PortConnection():
 
         match code:
             case 0:
-                return ("Succesffuly connected to Arduino on port " + self.portName)
+                return ("Successfuly connected to Arduino on port " + self.portName)
             case 1:
                 return ("Failed to connect to Arduino as selected port doesn't exist")
             case 2:
@@ -55,7 +55,7 @@ class PortConnection():
 
     def connectHelper(self, portName):
         try:
-            self.arduino = serial.Serial(portName, 9600, timeout=10)
+            self.arduino = serial.Serial(port=portName, baudrate=115200, timeout=0.1)
             self.portName = portName
             return 0
         except (FileNotFoundError):
@@ -83,6 +83,14 @@ class PortConnection():
             print (data)
         else:
             print ("No connection")
+
+    def sendHeartbeat(self):
+        numbytes = self.arduino.write('ping'.encode('utf-8'))
+        print (numbytes)
+
+    def checkHeartBeat(self):
+        response = self.arduino.readline()
+        return (response == "pong")
 
     def getArduino(self):
         return self.arduino
