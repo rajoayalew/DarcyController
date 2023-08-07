@@ -1,36 +1,32 @@
+#include <iostream>
+#include <cstring>
+#include <cstdlib>
+#include <cmath>
+
 const int numChars = 32;
 char receivedChars[numChars];
 char tempChars[numChars];
 int codes[30];
 char returnData[100];
 
-boolean newData = false;
+bool newData = false;
 
-void setup() {
-  Serial.begin(115200);
-  Serial.println("Arduino ready.");
-  Serial.println();
-}
-
-void loop() {
-    receiveData();
-    if (newData == true) {
-        strcpy(tempChars, receivedChars);
-        parseData();
-        newData = false;
-        handleCode(0, newData, true);
-    }
-}
+void receiveData();
+void parseData();
+char* handleCode(int, bool&, bool);
+int readData();
+int readData2();
+int readData3();
 
 void receiveData() {
-    static boolean receivingInProgress = false;
+    static bool receivingInProgress = false;
     static int index = 0;
     char startMarker = '<';
     char endMarker = '>';
     char receivedData;
 
-    while (Serial.available() > 0 && newData == false) {
-        receivedData = Serial.read();
+    while (newData == false) {
+        receivedData = std::cin.get();
 
         if (receivingInProgress == true) {
             if (receivedData != endMarker) {
@@ -40,7 +36,6 @@ void receiveData() {
                 if (index >= numChars) {
                     index = numChars - 1;
                 }
-
             } else {
                 receivedChars[index] = '\0';
                 receivingInProgress = false;
@@ -48,9 +43,8 @@ void receiveData() {
                 newData = true;
             }
         } else if (receivedData == startMarker) {
-          receivingInProgress = true;
+            receivingInProgress = true;
         }
-
     }
 }
 
@@ -61,22 +55,22 @@ void parseData() {
 
     if (strcmp(strtokIndex, "ping") == 0) {
         strcpy(returnData, "<pong>");
-        Serial.println(returnData);
         return;
     }
 
     returnData[0] = '<';
     index++;
 
-    while (strtokIndex != '\0') {
+    while (strtokIndex != NULL) {
         codes[index] = atoi(strtokIndex);
         strcat(returnData, handleCode(codes[index], isFirst, false));
         index++;
-        strtokIndex = strtok(NULL, ",");
+        strtokIndex = strtok(NULL, ","); // Move to the next token
     }
 
-    strcat(returnData, ">\0");
-    Serial.println(returnData);
+    strcat(returnData, ">");
+    std::cout << returnData << std::endl;
+    memset(returnData, 0, sizeof(returnData));
     memset(returnData, 0, sizeof(returnData));
     memset(tempChars, 0, sizeof(tempChars));
     memset(codes, 0, sizeof(codes));
@@ -88,31 +82,30 @@ char* handleCode(int code, bool& isFirst, bool clear) {
     static char numArray[14];
 
     if (clear) {
-      memset(numArray, 0, sizeof(numArray));
-      return numArray;
+        memset(numArray, 0, sizeof(numArray));
+        return numArray;
     }
 
     if (isFirst) {
-      isFirst = false;
+        isFirst = false; // Use assignment operator instead of ==
     } else {
-      strcpy(numArray, ", ");
+        strcpy(numArray, ", ");
     }
 
     switch (code) {
         case 0:
-          data = readData();
-          break;
+            data = readData();
+            break;
         case 1:
-          data = readData2();
-          break;
+            data = readData2();
+            break;
         case 2:
-          data = readData3();
-          break;
+            data = readData3();
+            break;
     }
 
-    strcat(numArray, String(data).c_str());
+    strcat(numArray, std::to_string(data).c_str());
     return numArray;
-
 }
 
 int readData() {
@@ -127,3 +120,18 @@ int readData3() {
     return 30;
 }
 
+int main() {
+    std::cout << "C++ program ready." << std::endl;
+
+    while (true) {
+        receiveData();
+        if (newData == true) {
+            strcpy(tempChars, receivedChars);
+            parseData();
+            newData = false;
+            handleCode(10, newData, true);
+        }
+    }
+
+    return 0;
+}

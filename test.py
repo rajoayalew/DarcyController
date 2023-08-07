@@ -22,12 +22,13 @@ arduino = port.getArduino()
 
 while True:
 
-    x = input("Enter a message: ")
-    port.arduino.write(x.encode('utf-8'))
-    #print (port.arduino.in_waiting)
-    time.sleep(0.5)
-
     if (port.arduino.in_waiting > 0):
         print (arduino.readline().decode('utf-8').rstrip('\n'))
         # port.printLine()
+
+    x = input("Enter a message: ")
+    port.arduino.write(x.encode('utf-8'))
+    time.sleep(0.2)
+
+
 
