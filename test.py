@@ -28,7 +28,7 @@ while True:
 
     x = input("Enter a message: ")
     port.arduino.write(x.encode('utf-8'))
-    time.sleep(0.2)
+    time.sleep(0.25)
 
 
 

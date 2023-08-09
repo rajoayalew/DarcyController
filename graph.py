@@ -171,6 +171,3 @@ class PopOutWindow(QMainWindow):
         self.obj.poppedOut = False
         self.obj.switchPopOutAction()
         self.sendBackClose.emit(self.widget)
-
-
-
