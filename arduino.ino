@@ -49,7 +49,7 @@ pinState servo4state = PIN_LOW;
 void setup() {
   Serial.begin(115200);
   Serial.println("Arduino ready.");
-  Serial.println();
+  randomSeed(analogRead(0));
 }
 
 void loop() {
@@ -118,7 +118,7 @@ void parseData() {
 
             if (strcmp(strtokIndex, ":") == 0) {
                 codes[index] = int(' ');
-                strcat(returnData, ", :");
+                strcat(returnData, ",:");
                 index++;
                 strtokIndex = strtok(NULL, ",");
                 toggleable = true;
@@ -158,7 +158,7 @@ char* handleToggleCodes(int pin, bool& isFirst, bool clear) {
     if (isFirst) {
         isFirst = false; // Use assignment operator instead of ==
     } else {
-        strcpy(state, ", ");
+        strcpy(state, ",");
     }
 
 
@@ -294,7 +294,7 @@ char* handleGraphCodes(int pin, bool& isFirst, bool clear) {
     if (isFirst) {
         isFirst = false; // Use assignment operator instead of ==
     } else {
-        strcpy(numArray, ", ");
+        strcpy(numArray, ",");
     }
 
     data = readGraphPins(pin);
@@ -303,52 +303,52 @@ char* handleGraphCodes(int pin, bool& isFirst, bool clear) {
     return numArray;
 }
 
-int readGraphPins(int pin) {
+long readGraphPins(int pin) {
     switch (pin) {
         case 0:
-            return 500;
+            return random(1000, 1500);
             break;
         case 1:
-            return 1000;
+            return random(1000, 1500);
             break;
         case 2:
-            return 1250;
+            return random(1000, 1500);
             break;
         case 3:
-            return 10;
+            return random(-200, 800);
             break;
         case 4:
-            return 20;
+            return random(-200, 800);
             break;
         case 5:
-            return 25;
+            return random(-200, 800);
             break;
         case 6:
-            return 30;
+            return random(-200, 800);
             break;
         case 7:
-            return 35;
+            return random(-200, 800);
             break;
         case 8:
-            return 45;
+            return random(-200, 800);
             break;
         case 9:
-            return 200;
+            return random(0, 500);
             break;
         case 10:
-            return 100;
+            return random(0, 500);
             break;
         case 11:
-            return 150;
+            return random(0, 500);
             break;
         case 12:
-            return 230;
+            return random(0, 500);
             break;
         case 13:
-            return 300;
+            return random(0, 500);
             break;
         case 14:
-            return 350;
+            return random(0, 500);
             break;
     }
 
@@ -362,6 +362,7 @@ void clean() {
     memset(receivedChars, 0, sizeof(receivedChars));
     return;
 }
+
 
 
 
