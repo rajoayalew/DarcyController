@@ -1,8 +1,8 @@
-from communications import PortConnection
+from communications import OldPortConnection
 import time
 import random
 
-port = PortConnection()
+port = OldPortConnection()
 print(port.connectToPort())
 file = open("output.txt", "w")
 time.sleep(1)

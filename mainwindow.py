@@ -102,4 +102,5 @@ class MainWindow(QMainWindow):
         self.controlWindow = ControlWindow(self.portConnect)
         self.close()
         self.controlWindow.show()
+        self.portConnect.arduino.readyRead.disconnect()
 

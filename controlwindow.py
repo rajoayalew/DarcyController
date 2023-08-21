@@ -10,6 +10,7 @@ class ControlWindow(QMainWindow):
         self.portConnect = port
         self.setWindowTitle("Control Window")
         self.popOutWindows = {}
+        self.correction = 1
 
         # Creates the DataGraphs with the graph, slider, and button with associated paramters
         self.loadGraph = DataGraph(3, "LC", "Mass (kilograms)", "Time (sec)", "Load Cell Graph", 0)
@@ -21,7 +22,7 @@ class ControlWindow(QMainWindow):
         self.tempGraph.popOutClicked.connect(self.handlePopOutClicked)
         self.pressureGraph.popOutClicked.connect(self.handlePopOutClicked)
 
-        # Defines containers and layouts for the ControlWindow
+        self.portConnect.dataToUpdateGUI.connect(self.passDataToGraphs)
 
         # Each DataGraph must have its own container as layouts cannot be shown by themselves
         # These all are containers or layouts for the graphs
@@ -148,7 +149,46 @@ class ControlWindow(QMainWindow):
         splitter.addWidget(self.graphContainer)
         splitter.addWidget(buttonContainer)
 
+        autoSequence.clicked.connect(self.runAutoSequence)
         self.setCentralWidget(splitter)
+
+    @Slot(list)
+    def passDataToGraphs(self, values):
+        print ("********")
+        print (values)
+        print ("^^^^^^")
+
+        dataPins = list(values[0])
+        statePins = (values[1])
+        dataValues = (values[2])
+        stateValues = (values[3])
+
+        if (not dataValues or not stateValues):
+            print ("Increase correction: " + str(self.correction))
+            self.correction += 1
+            return
+
+        # Go through data values first theoretically the length
+        # of the pins array and the values array should be the same length
+        self.loadGraph.updateTime(0.300, self.correction)
+        self.tempGraph.updateTime(0.300, self.correction)
+        self.pressureGraph.updateTime(0.300, self.correction)
+
+
+        for i in range(0, len(dataPins)):
+            pinNum = dataPins[i]
+            value = dataValues[i]
+
+            if (0 <= pinNum and pinNum <= 2):
+                self.loadGraph.update_plot_data(pinNum, value)
+            elif (3 <= pinNum and pinNum <= 8):
+                actualPlotNumber = pinNum - 3
+                self.tempGraph.update_plot_data(actualPlotNumber, value)
+            elif (9 <= pinNum and pinNum <= 14):
+                actualPlotNumber = pinNum - 9
+                self.pressureGraph.update_plot_data(actualPlotNumber, value)
+
+        self.correction = 1
 
     @Slot(int)
     def handlePopOutClicked(self, num):
@@ -195,10 +235,12 @@ class ControlWindow(QMainWindow):
             for i in range(0, numOfOpenWindows):
                 self.popOutWindows[i].close()
 
-    def main(self):
+    def runAutoSequence(self):
 
-        dataTimer = QTimer(self)
-        dataTimer.timeout.connect(self.readData)
-        dataTimer.start(1000)
+        self.dataTimer = QTimer(self)
+        self.dataTimer.timeout.connect(self.portConnect.readWrite)
+        self.dataTimer.start(300)
+
+
 
 
