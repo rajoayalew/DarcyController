@@ -108,7 +108,7 @@ class DataGraph(QObject):
             self.toggleButton.setText("Lock Graph")
 
     def update_plot_data(self):
-        self.time.append(self.time[-1] + 1)
+        self.time.append(self.time[-1] + 0.250)
 
         for i in range(len(self.plots)):
             self.selectPlot = self.plots[i]

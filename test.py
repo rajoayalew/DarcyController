@@ -10,7 +10,7 @@ time.sleep(1)
 #time.sleep(0.5)
 
 def generateString():
-    starterString = "<data,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,:,"
+    starterString = "<d,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,:,"
     values = [1, -1]
 
     for i in range(1, 16):
@@ -43,6 +43,4 @@ while True:
     #x = input("Enter a message: ")
     #port.arduino.write(x.encode('utf-8'))
     time.sleep(0.25)
-
-
 
