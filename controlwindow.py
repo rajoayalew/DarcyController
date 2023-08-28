@@ -11,6 +11,16 @@ class ControlWindow(QMainWindow):
         self.setWindowTitle("Control Window")
         self.popOutWindows = {}
         self.correction = 1
+        menuBar = self.menuBar()
+        fileMenu = menuBar.addMenu("&File")
+
+        # Menu bar
+        openAutoSequenceSelector = fileMenu.addAction("Open Autosequences")
+        definePins = fileMenu.addAction("Define Sensors and Pins")
+
+        # Links the act of clicking on the action to functions
+        openAutoSequenceSelector.triggered.connect(self.openAutoSequence)
+        definePins.triggered.connect(self.openDefinePins)
 
         # Creates the DataGraphs with the graph, slider, and button with associated paramters
         self.loadGraph = DataGraph(3, "LC", "Mass (kilograms)", "Time (sec)", "Load Cell Graph", 0)
@@ -35,12 +45,15 @@ class ControlWindow(QMainWindow):
         # These are the containers/layouts for everything having to do with the buttons
         # Everything will be added to mainButtonBox
         buttonContainer = QWidget()
+        abortContainer = QWidget()
         mainButtonBox = QVBoxLayout()
         solenoidHBox1 = QHBoxLayout()
         solenoidHBox2 = QHBoxLayout()
         lineIgniteHBox = QHBoxLayout()
         servoHBox = QHBoxLayout()
         abortHBox = QHBoxLayout()
+        abortVBox = QVBoxLayout()
+        abortTotal = QWidget()
 
         # These are the labels for each of the button areas controlling a specific thing
         # ex. solenoids/line cutters/etc and are set to None such that we can compensate for
@@ -91,6 +104,28 @@ class ControlWindow(QMainWindow):
         abortB = QPushButton("Type-B Abort")
         autoSequence = QPushButton("Run Autosequence")
 
+        solenoid1.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        solenoid2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        solenoid3.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        solenoid4.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        solenoid5.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        solenoid6.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        solenoid7.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        solenoid8.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        linecutter1.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        linecutter2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        igniter1.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        servo1.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        servo2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        servo3.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        servo4.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        abortA.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        abortB.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        autoSequence.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
         # Adds each button to its respective box
         solenoidHBox1.addWidget(solenoid1)
         solenoidHBox1.addWidget(solenoid2)
@@ -123,8 +158,9 @@ class ControlWindow(QMainWindow):
         mainButtonBox.addLayout(lineIgniteHBox)
         mainButtonBox.addWidget(servoLabel)
         mainButtonBox.addLayout(servoHBox)
-        mainButtonBox.addWidget(abortLabel)
-        mainButtonBox.addLayout(abortHBox)
+        abortContainer.setLayout(abortVBox)
+        abortVBox.addWidget(abortLabel)
+        abortVBox.addLayout(abortHBox)
         mainButtonBox.addSpacing(10)
 
         # Sets the layout of the DataGraph to its respective widget container
@@ -139,6 +175,7 @@ class ControlWindow(QMainWindow):
 
         # Sets the main button/label layout to be the layout of buttonContainer which is a widget container
         buttonContainer.setLayout(mainButtonBox)
+        abortTotal.setLayout(abortVBox)
 
         # Does the same thing as above except for graphs
         self.graphContainer.setLayout(self.VBoxGraph)
@@ -149,19 +186,25 @@ class ControlWindow(QMainWindow):
         splitter.addWidget(self.graphContainer)
         splitter.addWidget(buttonContainer)
 
+        splitterOverall = QSplitter(Qt.Orientation.Vertical)
+        splitterOverall.addWidget(abortTotal)
+        splitterOverall.addWidget(splitter)
+
         autoSequence.clicked.connect(self.runAutoSequence)
-        self.setCentralWidget(splitter)
+        self.setCentralWidget(splitterOverall)
+
+    def openAutoSequence(self):
+        pass
+
+    def openDefinePins(self):
+        pass
 
     @Slot(list)
     def passDataToGraphs(self, values):
-        print ("********")
-        print (values)
-        print ("^^^^^^")
-
-        dataPins = list(values[0])
-        statePins = (values[1])
-        dataValues = (values[2])
-        stateValues = (values[3])
+        dataPins = values[0]
+        statePins = values[1]
+        dataValues = values[2]
+        stateValues = values[3]
 
         if (not dataValues or not stateValues):
             print ("Increase correction: " + str(self.correction))
@@ -239,7 +282,7 @@ class ControlWindow(QMainWindow):
 
         self.dataTimer = QTimer(self)
         self.dataTimer.timeout.connect(self.portConnect.readWrite)
-        self.dataTimer.start(300)
+        self.dataTimer.start(250)
 
 
 

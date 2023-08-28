@@ -107,19 +107,7 @@ class DataGraph(QObject):
         self.sensorReadings[plotNum].append(dataValue)
         self.plots[plotNum].setData(self.time, self.sensorReadings[plotNum])
 
-        """
-        for i in range(len(self.plots)):
-            self.selectPlot = self.plots[i]
-            self.sensorReadings[i].append(randint(-50, 50))
-            self.plots[i].setData(self.time, self.sensorReadings[i])
-        """
-
         self.scrollBar.setMaximum(self.time[-1])
-
-        #print (self.plots)
-        print ()
-        print (self.sensorReadings)
-        print ()
 
         if (self.locked == True):
             self.viewBox.setRange(xRange=(max(self.time)-6, max(self.time)+1))

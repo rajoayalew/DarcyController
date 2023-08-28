@@ -159,6 +159,24 @@ void parseData() {
     clean();
 }
 
+void abortA() {
+  s1state = LOW;
+  s2state = LOW;
+  s3state = LOW;
+  s4state = LOW;
+  s5state = LOW;
+  s6state = LOW;
+  s7state = LOW;
+  s8state = LOW;
+  linestate1 = LOW;
+  linestate2 = LOW;
+  igniteState = LOW;
+  servo1state = LOW;
+  servo2state = LOW;
+  servo3state = LOW;
+  servo4state = LOW;
+}
+
 char* handleToggleCodes(int pin, bool& isFirst, bool clear) {
     static char state[8];
     bool toggle = (pin > 0) ? false : true;

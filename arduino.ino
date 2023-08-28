@@ -16,7 +16,7 @@ const uint8_t servo3 = 14;
 const uint8_t servo4 = 15;
 */
 
-const int numChars = 230;
+const int numChars = 250;
 char receivedChars[numChars];
 char tempChars[numChars];
 int codes[50];
@@ -48,7 +48,7 @@ pinState servo4state = PIN_LOW;
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("Arduino ready.");
+  //Serial.println("Arduino ready.");
   randomSeed(analogRead(0));
 }
 
@@ -94,6 +94,7 @@ void receiveData() {
         }
 
     }
+
 }
 
 void parseData() {
@@ -108,10 +109,18 @@ void parseData() {
         return;
     }
 
+    if (strcmp(strtokIndex, "abortA") == 0) {
+        strcpy(returnData, "<aborted>");
+        abortA();
+        Serial.println(returnData);
+        clean();
+        return;
+    }
+
     returnData[0] = '<';
     index++;
 
-    if (strcmp(strtokIndex, "data") == 0) {
+    if (strcmp(strtokIndex, "d") == 0) {
         strtokIndex = strtok(NULL, ",");
 
         while (strtokIndex != NULL) {
@@ -137,7 +146,7 @@ void parseData() {
 
 
     } else {
-        strcpy(returnData, "<nonvalid>");
+        strcpy(returnData, "<nonvalid");
     }
 
     strcat(returnData, ">");
@@ -145,8 +154,26 @@ void parseData() {
     clean();
 }
 
+void abortA() {
+  s1state = PIN_LOW;
+  s2state = PIN_LOW;
+  s3state = PIN_LOW;
+  s4state = PIN_LOW;
+  s5state = PIN_LOW;
+  s6state = PIN_LOW;
+  s7state = PIN_LOW;
+  s8state = PIN_LOW;
+  linestate1 = PIN_LOW;
+  linestate2 = PIN_LOW;
+  igniteState = PIN_LOW;
+  servo1state = PIN_LOW;
+  servo2state = PIN_LOW;
+  servo3state = PIN_LOW;
+  servo4state = PIN_LOW;
+}
+
 char* handleToggleCodes(int pin, bool& isFirst, bool clear) {
-    static char state[8];
+    static char state[20];
     bool toggle = (pin > 0) ? false : true;
     int actualPin = abs(pin);
 
@@ -283,7 +310,7 @@ char* handleToggleCodes(int pin, bool& isFirst, bool clear) {
 }
 
 char* handleGraphCodes(int pin, bool& isFirst, bool clear) {
-    int data;
+    long data;
     static char numArray[14];
 
     if (clear) {
@@ -363,6 +390,35 @@ void clean() {
     return;
 }
 
+/*
+int count = 1;
 
+void setup() {
+  Serial.begin(115200);
+}
 
+void loop() {
+  Serial.println("<Hello Arduino #" + String(count) + ">");
+  count++;
+  delay(1000);
+}
+
+*/
+
+/*
+
+String message;
+
+void setup() {
+  Serial.begin(115200);
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    message = Serial.readString();
+    Serial.println(message);
+  }
+}
+
+*/
 

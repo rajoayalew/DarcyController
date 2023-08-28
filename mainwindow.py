@@ -3,6 +3,9 @@ from PySide6.QtCore import Qt, QTimer, Slot, Signal
 from controlwindow import ControlWindow
 from communications import PortController
 
+"""
+"""
+
 class MainWindow(QMainWindow):
     def __init__(self, app):
         super().__init__()
@@ -10,7 +13,7 @@ class MainWindow(QMainWindow):
         # connect is an instance of the PortController class defined in communications.py
         self.app = app
         self.portConnect = PortController()
-        self.setWindowTitle("Rocketify")
+        self.setWindowTitle("Darcy Test Stand Controller")
 
         # Menu bar and sub menus
         menuBar = self.menuBar()
