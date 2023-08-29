@@ -58,7 +58,7 @@ while True:
 
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
     QMetaObject, QObject, QPoint, QRect,
-    QSize, QTime, QUrl, Qt)
+    QSize, QTime, QUrl, Qt, Signal, Slot)
 from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
@@ -89,14 +89,21 @@ class Ui_MainWindow(object):
         self.hasBeenLoaded = False
         self.file = None
         self.autoSequenceName = None
-        self.content = None
+        self.fileContent = None
+        self.path = "autosequences.json"
 
         if (not self.autoSequenceFileExists()):
-            self.file = open("autosequences.json", "w")
-        else:
-            self.file = open("autosequences.json", "a")
-            self.content = self.file.read()
+            self.file = open(self.path, "x")
+            self.file.close()
 
+        if (os.path.getsize(self.path) == 0):
+            emptyJSONObject = {}
+            json.dump(emptyJSONObject, self.file, indent=4)
+            self.content = emptyJSONObject
+
+        self.file = open(self.path, "r")
+        self.fileContent = json.load(self.file)
+        self.file.close()
 
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
@@ -297,7 +304,12 @@ class Ui_MainWindow(object):
     def saveLoadoutButtonClicked(self):
 
         if (self.loadAuto.currentIndex() == -1):
-            pass
+            self.saveWindow = saveNewAutosequence()
+            self.saveWindow.setWindowModality(Qt.ApplicationModal)
+            self.saveWindow.autoSequenceNameSignal.connect(self.updateAutoSequenceName)
+            self.saveWindow.show()
+
+        print (self.autoSequenceName)
 
         dataToWrite = {
             "autosequenceName": self.autoSequenceName
@@ -330,16 +342,29 @@ class Ui_MainWindow(object):
 
             dataToWrite["timingObject" + str(index)] = timingObject
 
-        print (dataToWrite)
-
+        self.file = open(self.path, "w")
+        self.fileContent[self.autoSequenceName] = dataToWrite
+        json.dump(self.fileContent, self.file, indent=4)
+        self.file.close()
 
     def populateLoadBox(self):
         pass
 
+    @Slot(str)
+    def updateAutoSequenceName(self, name):
+        self.autoSequenceName = name
+
 
 class saveNewAutosequence(QMainWindow):
+    autoSequenceNameSignal = Signal(str)
+
     def __init__(self, parent=None):
         super().__init__()
+
+        # Make sure that u arent overwriting another autosequence
+        # Ensure different names
+
+        self.autoSequenceNameText = None
 
         self.setWindowTitle("Save Autosequence")
         self.label = QLabel("To save this autosequence, please give it a name.")
@@ -361,11 +386,17 @@ class saveNewAutosequence(QMainWindow):
         container.setLayout(layout)
         container.setLayout(layout)
 
-        self.pushButton.clicked.connect()
+        self.pushButton.clicked.connect(self.passAutoSequenceName)
         self.setCentralWidget(container)
 
     def passAutoSequenceName(self):
-        print(self.lineEdit.currentText())
+        self.autoSequenceNameText = self.lineEdit.text()
+        self.autoSequenceNameSignal.emit(self.autoSequenceNameText)
+        self.close()
+
+    def closeEvent(self, event):
+        print ("name")
+        super().closeEvent(event)
 
 
 

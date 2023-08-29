@@ -282,7 +282,7 @@ class ControlWindow(QMainWindow):
 
         self.dataTimer = QTimer(self)
         self.dataTimer.timeout.connect(self.portConnect.readWrite)
-        self.dataTimer.start(250)
+        self.dataTimer.start(100)
 
 
 

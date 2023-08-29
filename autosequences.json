@@ -1,0 +1,32 @@
+{
+    "null": {
+        "autosequenceName": null,
+        "timingObject0": {
+            "timingNumber": 1,
+            "selectedToggleable": "Solenoid 5",
+            "selectedState": "HIGH",
+            "secondsToActivate": 2.0
+        },
+        "timingObject1": {
+            "timingNumber": 2,
+            "selectedToggleable": "Solenoid 3",
+            "selectedState": "LOW",
+            "secondsToActivate": 10.0
+        },
+        "timingObject2": {
+            "timingNumber": 3,
+            "selectedToggleable": "Line Cutter 1",
+            "selectedState": "HIGH",
+            "secondsToActivate": 13.0
+        }
+    },
+    "null": {
+        "autosequenceName": null,
+        "timingObject0": {
+            "timingNumber": 1,
+            "selectedToggleable": "Solenoid 1",
+            "selectedState": "HIGH",
+            "secondsToActivate": 122.0
+        }
+    }
+}
