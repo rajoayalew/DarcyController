@@ -1,32 +1,101 @@
 {
-    "null": {
-        "autosequenceName": null,
+    "id0": {
+        "autosequenceName": "Timing1",
         "timingObject0": {
             "timingNumber": 1,
-            "selectedToggleable": "Solenoid 5",
-            "selectedState": "HIGH",
-            "secondsToActivate": 2.0
+            "selectedToggleable": "Solenoid 3",
+            "selectedState": "LOW",
+            "secondsToActivate": 12.0
         },
         "timingObject1": {
             "timingNumber": 2,
-            "selectedToggleable": "Solenoid 3",
+            "selectedToggleable": "Solenoid 1",
             "selectedState": "LOW",
-            "secondsToActivate": 10.0
+            "secondsToActivate": 2.0
         },
         "timingObject2": {
             "timingNumber": 3,
-            "selectedToggleable": "Line Cutter 1",
+            "selectedToggleable": "Solenoid 1",
+            "selectedState": "LOW",
+            "secondsToActivate": 35.0
+        },
+        "timingObject3": {
+            "timingNumber": 4,
+            "selectedToggleable": "Solenoid 1",
             "selectedState": "HIGH",
-            "secondsToActivate": 13.0
+            "secondsToActivate": 1.0
+        },
+        "timingObject4": {
+            "timingNumber": 5,
+            "selectedToggleable": "Solenoid 7",
+            "selectedState": "HIGH",
+            "secondsToActivate": 2.0
+        },
+        "timingObject5": {
+            "timingNumber": 6,
+            "selectedToggleable": "Line Cutter 1",
+            "selectedState": "LOW",
+            "secondsToActivate": 2.0
         }
     },
-    "null": {
-        "autosequenceName": null,
+    "id1": {
+        "autosequenceName": "Timing2",
         "timingObject0": {
             "timingNumber": 1,
             "selectedToggleable": "Solenoid 1",
             "selectedState": "HIGH",
-            "secondsToActivate": 122.0
+            "secondsToActivate": 1.0
+        },
+        "timingObject1": {
+            "timingNumber": 2,
+            "selectedToggleable": "Solenoid 1",
+            "selectedState": "HIGH",
+            "secondsToActivate": 2.0
+        },
+        "timingObject2": {
+            "timingNumber": 3,
+            "selectedToggleable": "Solenoid 1",
+            "selectedState": "HIGH",
+            "secondsToActivate": 3.0
+        },
+        "timingObject3": {
+            "timingNumber": 4,
+            "selectedToggleable": "Solenoid 8",
+            "selectedState": "HIGH",
+            "secondsToActivate": 214.0
+        }
+    },
+    "id2": {
+        "autosequenceName": "bread",
+        "timingObject0": {
+            "timingNumber": 1,
+            "selectedToggleable": "Solenoid 1",
+            "selectedState": "HIGH",
+            "secondsToActivate": 1.0
+        },
+        "timingObject1": {
+            "timingNumber": 2,
+            "selectedToggleable": "Solenoid 1",
+            "selectedState": "HIGH",
+            "secondsToActivate": 2.0
+        },
+        "timingObject2": {
+            "timingNumber": 3,
+            "selectedToggleable": "Solenoid 1",
+            "selectedState": "HIGH",
+            "secondsToActivate": 3.0
+        },
+        "timingObject3": {
+            "timingNumber": 4,
+            "selectedToggleable": "Solenoid 8",
+            "selectedState": "HIGH",
+            "secondsToActivate": 214.0
+        },
+        "timingObject4": {
+            "timingNumber": 5,
+            "selectedToggleable": "Solenoid 4",
+            "selectedState": "HIGH",
+            "secondsToActivate": 2.0
         }
     }
 }

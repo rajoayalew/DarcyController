@@ -65,10 +65,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform, QDoubleValidator)
 from PySide6.QtWidgets import (QApplication, QComboBox, QGroupBox, QLineEdit,
     QMainWindow, QMenuBar, QPushButton, QScrollArea,
-    QSizePolicy, QStatusBar, QWidget, QVBoxLayout, QLabel, QHBoxLayout)
+    QSizePolicy, QStatusBar, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QDialog)
 
 import json
 import os
+import copy
 
 class DoubleLineEdit(QLineEdit):
     def __init__(self, parent=None):
@@ -96,10 +97,12 @@ class Ui_MainWindow(object):
             self.file = open(self.path, "x")
             self.file.close()
 
-        if (os.path.getsize(self.path) == 0):
+        if (self.isEmpty()):
+            self.file = open(self.path, "a")
             emptyJSONObject = {}
             json.dump(emptyJSONObject, self.file, indent=4)
             self.content = emptyJSONObject
+            self.file.close()
 
         self.file = open(self.path, "r")
         self.fileContent = json.load(self.file)
@@ -122,8 +125,9 @@ class Ui_MainWindow(object):
         self.loadAuto = QComboBox(self.chooseAutoBox)
         self.loadAuto.setObjectName(u"loadAuto")
         self.loadAuto.setGeometry(QRect(20, 40, 321, 24))
-        self.loadAuto.addItem("Blah")
+        self.populateLoadBox()
         self.loadAuto.setCurrentIndex(-1)
+        self.loadAuto.currentIndexChanged.connect(self.updateAutoSequenceName)
 
         # The button that loads the selected autosequence in the dropdown
         self.loadButton = QPushButton(self.chooseAutoBox)
@@ -218,7 +222,7 @@ class Ui_MainWindow(object):
         #
         self.addNewTimingButtton.clicked.connect(self.newTimingButtonClicked)
         self.saveLoadoutButton.clicked.connect(self.saveLoadoutButtonClicked)
-        self.populateLoadBox()
+        self.loadButton.clicked.connect(self.loadButtonClicked)
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Autosequence", None))
@@ -296,20 +300,65 @@ class Ui_MainWindow(object):
         #elf.newTimingBox.setGeometry(QRect(, 20, 50, 61))
         self.timings.append(self.newTimingBox)
 
+    def loadHelper(self, timingNumber, toggleableName, selectedState, activationTime):
+
+        toggleableList = ["Solenoid 1", "Solenoid 2", "Solenoid 3", "Solenoid 4",
+                          "Solenoid 5", "Solenoid 6", "Solenoid 7",
+                          "Solenoid 8", "Line Cutter 1", "Line Cutter 2", "Igniter",
+                          "Servo 1", "Servo 2", "Servo 3", "Servo 4"]
+
+        stateList = ["HIGH", "LOW"]
+
+        self.box.addSpacing(10)
+
+        self.newTimingBox = QGroupBox(self.scrollAreaWidgetContents)
+        self.newTimingBox.setFixedSize(311, 61)
+
+        self.newChooseToggleable = QComboBox(self.newTimingBox)
+        self.newChooseToggleable.addItems(toggleableList)
+        self.newChooseToggleable.setGeometry(QRect(10, 30, 111, 24))
+        self.newChooseToggleable.setObjectName("chooseToggleable")
+        self.newChooseToggleable.setCurrentText(toggleableName)
+
+        self.newChooseState = QComboBox(self.newTimingBox)
+        self.newChooseState.addItems(stateList)
+        self.newChooseState.setGeometry(QRect(130, 30, 81, 24))
+        self.newChooseState.setObjectName("chooseState")
+        self.newChooseState.setCurrentText(selectedState)
+
+        self.add1 = DoubleLineEdit(self.newTimingBox)
+        self.add1.setGeometry(QRect(220, 30, 81, 24))
+        self.add1.setObjectName("setTiming")
+        self.add1.setText(str(activationTime))
+
+        self.box.addWidget(self.newTimingBox)
+        self.newTimingBox.setTitle("Timing {}".format(timingNumber))
+        self.timings.append(self.newTimingBox)
+
     def autoSequenceFileExists(self):
         path = "./autosequences.json"
         checkBool = os.path.isfile(path)
         return (checkBool)
 
+    def updateAutoSequenceName(self):
+        self.autoSequenceName = self.loadAuto.currentText()
+
     def saveLoadoutButtonClicked(self):
 
-        if (self.loadAuto.currentIndex() == -1):
+        if (self.loadAuto.currentIndex() == -1 or self.loadAuto.currentText() == "New Autosequence"):
             self.saveWindow = saveNewAutosequence()
             self.saveWindow.setWindowModality(Qt.ApplicationModal)
-            self.saveWindow.autoSequenceNameSignal.connect(self.updateAutoSequenceName)
+            self.saveWindow.autoSequenceNameSignal.connect(self.updateAutoSequenceAndSave)
             self.saveWindow.show()
+        else:
+            self.saveLoadout()
 
-        print (self.autoSequenceName)
+    @Slot(str)
+    def updateAutoSequenceAndSave(self, name):
+        self.autoSequenceName = name
+        self.saveLoadout()
+
+    def saveLoadout(self):
 
         dataToWrite = {
             "autosequenceName": self.autoSequenceName
@@ -324,6 +373,7 @@ class Ui_MainWindow(object):
             timing = float(setTiming.text())
             timingNumber = index + 1
 
+            """
             print()
             print(groupBox.title())
             print(chooseToggleable)
@@ -332,6 +382,7 @@ class Ui_MainWindow(object):
             print(timing)
             print(index)
             print()
+            """
 
             timingObject = {
                               "timingNumber": timingNumber,
@@ -342,17 +393,110 @@ class Ui_MainWindow(object):
 
             dataToWrite["timingObject" + str(index)] = timingObject
 
+        keyList = list(self.fileContent.keys())
+        idNum = None
+
+        if (len(keyList) == 0):
+            idNum = 0
+        else:
+
+            if (self.autoSequenceName == None or self.loadAuto.currentText() == "New Autosequence"):
+                idNum = int(keyList[-1][2:]) + 1
+            else:
+
+                for key in self.fileContent:
+                    data = self.fileContent[key]
+                    autoSequenceName = data["autosequenceName"]
+
+                    if (autoSequenceName == self.autoSequenceName):
+                        idNum = key[2:]
+
         self.file = open(self.path, "w")
-        self.fileContent[self.autoSequenceName] = dataToWrite
+        self.fileContent["id" + str(idNum)] = dataToWrite
         json.dump(self.fileContent, self.file, indent=4)
         self.file.close()
 
     def populateLoadBox(self):
-        pass
 
-    @Slot(str)
-    def updateAutoSequenceName(self, name):
-        self.autoSequenceName = name
+        if (self.isEmpty()):
+            return
+
+        jsonContent = self.fileContent
+
+        for key in jsonContent:
+            data = jsonContent[key]
+            autoSequenceName = data["autosequenceName"]
+            self.loadAuto.addItem(autoSequenceName)
+
+    def loadButtonClicked(self):
+
+        loadAutoItems = [self.loadAuto.itemText(i) for i in range(self.loadAuto.count())]
+
+        if (self.loadAuto.currentIndex() == -1):
+            return
+        elif ("New Autosequence" not in loadAutoItems):
+            self.loadAuto.addItem("New Autosequence")
+
+        self.clear_layout(self.box)
+        jsonContent = copy.deepcopy(self.fileContent)
+        findAutoSequenceName = self.loadAuto.currentText()
+
+        for key in jsonContent:
+            data = jsonContent[key]
+            currentAutoSequenceName = data["autosequenceName"]
+            index = 0
+
+            if (currentAutoSequenceName == findAutoSequenceName):
+
+                first_key = next(iter(data))
+                data.pop(first_key)
+
+                for num in data:
+                    timingObject = data["timingObject" + str(index)]
+                    timingNumber = timingObject["timingNumber"]
+                    toggleableName = timingObject["selectedToggleable"]
+                    selectedState = timingObject["selectedState"]
+                    activationTime = timingObject["secondsToActivate"]
+
+                    self.loadHelper(timingNumber, toggleableName, selectedState, activationTime)
+
+                    index += 1
+
+        lastGroupBox = self.timings[-1]
+        timingName = lastGroupBox.title()
+        spaceIndex = timingName.find(" ")
+        self.count = int(timingName[spaceIndex+1:])
+
+    def emptyVBoxLayout(self):
+        while (self.box.count() > 0):
+            item = self.box.takeAt(0)
+            print (item)
+            widget = item.widget()
+            self.box.removeWidget(widget)
+            widget.deleteLater()
+            self.timings = []
+
+    def clear_layout(self, layout, delete_widgets=True):
+        while (layout.count() > 0):
+
+            item = layout.takeAt(0)
+
+            if delete_widgets:
+                widget = item.widget()
+                if widget:
+                    widget.deleteLater()
+            child_layout = item.layout()
+            if child_layout:
+                self.clear_layout(child_layout, delete_widgets)
+            del item
+
+        self.timings = []
+
+    def isEmpty(self):
+        if (os.path.getsize(self.path) == 0):
+            return True
+        else:
+            return False
 
 
 class saveNewAutosequence(QMainWindow):
@@ -395,17 +539,4 @@ class saveNewAutosequence(QMainWindow):
         self.close()
 
     def closeEvent(self, event):
-        print ("name")
         super().closeEvent(event)
-
-
-
-
-
-
-
-
-
-
-
-

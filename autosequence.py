@@ -10,7 +10,7 @@ def main():
     ui.setupUi(main_window)
 
     main_window.show()
-    app.exec_()
+    app.exec()
 
 """
 def main():
