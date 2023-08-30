@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QSplitter, QLabel, QHBoxLayout, QSizePolicy
 from PySide6.QtCore import QTimer, Qt, Slot, Signal
 from graph import DataGraph, PopOutWindow
+from test import DoubleLineEdit, Ui_MainWindow, saveNewAutosequence
 
 class ControlWindow(QMainWindow):
     def __init__(self, port):
@@ -194,7 +195,12 @@ class ControlWindow(QMainWindow):
         self.setCentralWidget(splitterOverall)
 
     def openAutoSequence(self):
-        pass
+        self.main_window = QMainWindow()
+
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self.main_window)
+
+        self.main_window.show()
 
     def openDefinePins(self):
         pass
@@ -213,9 +219,9 @@ class ControlWindow(QMainWindow):
 
         # Go through data values first theoretically the length
         # of the pins array and the values array should be the same length
-        self.loadGraph.updateTime(0.300, self.correction)
-        self.tempGraph.updateTime(0.300, self.correction)
-        self.pressureGraph.updateTime(0.300, self.correction)
+        self.loadGraph.updateTime(0.250, self.correction)
+        self.tempGraph.updateTime(0.250, self.correction)
+        self.pressureGraph.updateTime(0.250, self.correction)
 
 
         for i in range(0, len(dataPins)):
@@ -282,7 +288,7 @@ class ControlWindow(QMainWindow):
 
         self.dataTimer = QTimer(self)
         self.dataTimer.timeout.connect(self.portConnect.readWrite)
-        self.dataTimer.start(100)
+        self.dataTimer.start(250)
 
 
 

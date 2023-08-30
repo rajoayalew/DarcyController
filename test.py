@@ -347,7 +347,7 @@ class Ui_MainWindow(object):
 
         if (self.loadAuto.currentIndex() == -1 or self.loadAuto.currentText() == "New Autosequence"):
             self.saveWindow = saveNewAutosequence()
-            self.saveWindow.setWindowModality(Qt.ApplicationModal)
+            #self.saveWindow.setWindowModality(Qt.ApplicationModal)
             self.saveWindow.autoSequenceNameSignal.connect(self.updateAutoSequenceAndSave)
             self.saveWindow.show()
         else:
